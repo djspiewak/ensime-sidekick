@@ -61,6 +61,7 @@ trait EnsimeBackendComponent extends BackendComponent {
       agent.stop()
       Thread.sleep(2000)        // TODO doing something very stupid...
       agent.socket.close()
+      proc.destroy()
     }
   }
 }
