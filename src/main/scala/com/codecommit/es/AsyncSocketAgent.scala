@@ -58,11 +58,13 @@ private[es] class AsyncSocketAgent(val socket: Socket)(callback: String => Unit)
   private def runReader() {
     val reader = new InputStreamReader(socket.getInputStream)
     
-    while (!stopRequested) {
-      val buffer = new Array[Char](readHeader(reader))
-      reader.read(buffer)
-      callback(new String(buffer))
-    }
+    try {
+      while (!stopRequested) {
+        val buffer = new Array[Char](readHeader(reader))
+        reader.read(buffer)
+        callback(new String(buffer))
+      }
+    } catch { case _ if stopRequested => }
   }
   
   private def readHeader(reader: Reader) = {

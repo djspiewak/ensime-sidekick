@@ -32,13 +32,14 @@ trait EnsimeBackendComponent extends BackendComponent {
     var isStarted = false
     
     var proc: Process = _
+    var portFile: File = _      // ouch!
     var port: Int = -1
     
     var agent: AsyncSocketAgent = _
     
     def start(callback: String => Unit) {
       if (!isStarted) {
-        val portFile = File.createTempFile("ensime", ".port", TempDir)
+        portFile = File.createTempFile("ensime", ".port", TempDir)
         val logFile = File.createTempFile("ensime", ".log", TempDir)
         val serverScript = new File(new File(EnsimeHome, "bin"), "server")
         
@@ -63,6 +64,9 @@ trait EnsimeBackendComponent extends BackendComponent {
       agent.stop()
       Thread.sleep(2000)        // TODO doing something very stupid...
       agent.socket.close()
+      
+      // kill ensime server by any means necessary
+      Process("/bin/sh" :: "-c" :: "kill $(pgrep -f '" + portFile.getCanonicalPath + "')" :: Nil).run()
       proc.destroy()
     }
   }
