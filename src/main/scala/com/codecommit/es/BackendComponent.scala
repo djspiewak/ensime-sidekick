@@ -24,6 +24,8 @@ trait BackendComponent {
 }
 
 trait EnsimeBackendComponent extends BackendComponent {
+  def TempDir = new File("/tmp")
+  
   def EnsimeHome: File
   
   lazy val Backend = new Backend {
@@ -36,8 +38,8 @@ trait EnsimeBackendComponent extends BackendComponent {
     
     def start(callback: String => Unit) {
       if (!isStarted) {
-        val portFile = File.createTempFile("ensime", ".port")
-        val logFile = File.createTempFile("ensime", ".log")
+        val portFile = File.createTempFile("ensime", ".port", TempDir)
+        val logFile = File.createTempFile("ensime", ".log", TempDir)
         val serverScript = new File(new File(EnsimeHome, "bin"), "server")
         
         val builder = Process(serverScript.getAbsolutePath + " " + portFile.getCanonicalPath, EnsimeHome)
