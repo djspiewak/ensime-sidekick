@@ -3,7 +3,7 @@ package es
 
 import org.gjt.sp.jedit
 import jedit.{jEdit => JEdit}
-import jedit.{EBMessage, EBPlugin}
+import jedit.{EBMessage, EBPlugin, View}
 import jedit.msg.ViewUpdate
 
 import java.awt.EventQueue
@@ -59,5 +59,18 @@ object EnsimePlugin extends EnsimeProtocolComponent with EnsimeBackendComponent 
     } map { _.getCanonicalPath } getOrElse canonicalPath
     
     Ensime.initProject(JOptionPane.showInputDialog("ENSIME Project Root:", projectPath))
+  }
+  
+  def inspectType(view: View) {
+    val buffer = view.getBuffer
+    
+    val filename = if (buffer.isNewFile) {
+      buffer.autosave()
+      buffer.getAutosaveFile
+    } else {
+      new File(buffer.getPath)
+    }
+    
+    Ensime.inspectTypeAtPoint(filename.getCanonicalPath, view.getTextArea.getCaretPosition)
   }
 }

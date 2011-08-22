@@ -18,11 +18,13 @@ unmanagedJars in Compile += {
 
 initialCommands := """
     import com.codecommit.es._
+    import client._
     import java.io.File
     val Cake = new EnsimeProtocolComponent with EnsimeBackendComponent {
       lazy val EnsimeHome = new File("/Users/daniel/Local/ensime_2.9.0-1-0.6.1")
     }
     trait DebugBackendHandler extends BackendHandler {
+      import EnsimeProtocol._
       def backgroundMessage(msg: String) = println(msg)
       def clearAll() {
         println("Clear all...")

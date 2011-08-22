@@ -100,6 +100,10 @@ trait EnsimeProtocolComponent extends BackendComponent {
       dispatchSwank(id, SExp(key("swank:type-completion"), file, offset, prefix))
     }
     
+    def inspectTypeAtPoint(file: String, offset: Int) {
+      dispatchSwank(callId(), SExp("swank:inspect-type-at-point", file, offset))
+    }
+    
     private def dispatchSwank(id: Int, sexp: SExp) {
       Backend.send(SExp(key(":swank-rpc"), sexp, id).toWireString)
     }
@@ -122,6 +126,7 @@ trait EnsimeProtocolComponent extends BackendComponent {
     def initProject(rootDir: String)
     
     def typeCompletion(file: String, offset: Int, prefix: String)(callback: List[CompletionResult] => Unit)
+    def inspectTypeAtPoint(file: String, offset: Int)
   }
 }
 

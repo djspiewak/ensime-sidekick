@@ -3,8 +3,11 @@ plugin.com.codecommit.es.EnsimePlugin.name=ENSIME
 plugin.com.codecommit.es.EnsimePlugin.author=Daniel Spiewak
 plugin.com.codecommit.es.EnsimePlugin.version=0.1
 
-plugin.com.codecommit.es.EnsimePlugin.menu=ensime.ensime
+plugin.com.codecommit.es.EnsimePlugin.menu=ensime.ensime \
+  - \
+  ensime.ensime-inspect-type
 options.menu.label=ENSIME
 ensime.ensime.label=Initialize Project
+ensime.ensime-inspect-type.label=Inspect Type
 
 plugin.com.codecommit.es.EnsimePlugin.depend.0=plugin sidekick.SideKickPlugin 1.2
