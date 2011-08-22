@@ -1,7 +1,10 @@
 package com.codecommit
 package es
 
-import org.gjt.sp.jedit.EditPlugin
+import org.gjt.sp.jedit
+import jedit.{jEdit => JEdit}
+import jedit.{EBMessage, EBPlugin}
+import jedit.msg.ViewUpdate
 
 import java.awt.EventQueue
 import java.io.File
@@ -10,9 +13,23 @@ import javax.swing.JOptionPane
 
 import client._
 
-class EnsimePlugin extends EditPlugin {
+class EnsimePlugin extends EBPlugin {
+  val handler = new SidekickBackendHandler
+  
   override def start() {
-    EnsimePlugin.Backend.start(EnsimePlugin.handle(new SidekickBackendHandler))
+    handler.views = Set(JEdit.getViews: _*)
+    
+    EnsimePlugin.Backend.start(EnsimePlugin.handle(handler))
+  }
+  
+  override def handleMessage(message: EBMessage) = message match {
+    case update: ViewUpdate if update.getWhat == ViewUpdate.CREATED =>
+      handler.views += update.getView
+    
+    case update: ViewUpdate if update.getWhat == ViewUpdate.CLOSED =>
+      handler.views -= update.getView
+    
+    case _ =>
   }
   
   override def stop() {
