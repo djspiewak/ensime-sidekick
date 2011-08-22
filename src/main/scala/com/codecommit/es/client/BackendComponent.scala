@@ -63,7 +63,6 @@ trait EnsimeBackendComponent extends BackendComponent {
     
     def stop() {
       agent.stop()
-      Thread.sleep(2000)        // TODO doing something very stupid...
       agent.socket.close()
       
       // kill ensime server by any means necessary

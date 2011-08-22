@@ -45,14 +45,16 @@ private[es] class AsyncSocketAgent(val socket: Socket)(callback: String => Unit)
   private def runWriter() {
     val writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream))
     
-    while (!stopRequested) {
-      val work = queue.poll(1, TimeUnit.SECONDS)
-      if (work != null) {
-        writer.write("%06x" format work.length)
-        writer.write(work)
-        writer.flush()
+    try {
+      while (!stopRequested) {
+        val work = queue.poll(1, TimeUnit.SECONDS)
+        if (work != null) {
+          writer.write("%06x" format work.length)
+          writer.write(work)
+          writer.flush()
+        }
       }
-    }
+    } catch { case _ if stopRequested => }
   }
   
   // TODO we're just assuming that ENSIME never sends us anything wonky
