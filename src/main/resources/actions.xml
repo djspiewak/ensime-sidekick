@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<!DOCTYPE ACTIONS SYSTEM "actions.dtd">
+<ACTIONS>
+    <ACTION NAME="ensime">
+        <CODE>
+            com.codecommit.es.EnsimePlugin.initProject(view.getBuffer().getPath());
+        </CODE>
+    </ACTION>
+</ACTIONS>

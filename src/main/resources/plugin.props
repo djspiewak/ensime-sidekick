@@ -1,0 +1,10 @@
+plugin.com.codecommit.es.EnsimePlugin.activate=defer
+plugin.com.codecommit.es.EnsimePlugin.name=ENSIME
+plugin.com.codecommit.es.EnsimePlugin.author=Daniel Spiewak
+plugin.com.codecommit.es.EnsimePlugin.version=0.1
+
+plugin.com.codecommit.es.EnsimePlugin.menu=ensime.ensime
+options.menu.label=ENSIME
+ensime.ensime.label=Initialize Project
+
+plugin.com.codecommit.es.EnsimePlugin.depend.0=plugin sidekick.SideKickPlugin 1.2

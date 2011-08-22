@@ -1,7 +1,15 @@
+name := "EnsimeSidekick"
+
+version := "0.1"
+
 scalaVersion := "2.9.0-1"
 
 unmanagedJars in Compile ++= {
   new File("/Users/daniel/Library/jEdit/jars").listFiles map Attributed.blank toSeq
+}
+
+unmanagedJars in Compile += {
+  Attributed.blank(new File("/Applications/jEdit.app/Contents/Resources/Java/jedit.jar"))
 }
 
 initialCommands := """
