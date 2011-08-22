@@ -21,7 +21,7 @@ class EnsimeParser extends SideKickParser("ensime") {
   override def complete(editPane: EditPane, caret: Int): SideKickCompletion = {
     val buffer = editPane.getBuffer
     
-    val file = if (buffer.isNewFile) {
+    val file = if (buffer.isDirty) {
       buffer.autosave()
       buffer.getAutosaveFile
     } else {

@@ -61,16 +61,18 @@ object EnsimePlugin extends EnsimeProtocolComponent with EnsimeBackendComponent 
     Ensime.initProject(JOptionPane.showInputDialog("ENSIME Project Root:", projectPath))
   }
   
-  def inspectType(view: View) {
+  def determineType(view: View) {
     val buffer = view.getBuffer
     
-    val filename = if (buffer.isNewFile) {
+    val filename = if (buffer.isDirty) {
       buffer.autosave()
       buffer.getAutosaveFile
     } else {
       new File(buffer.getPath)
     }
     
-    Ensime.inspectTypeAtPoint(filename.getCanonicalPath, view.getTextArea.getCaretPosition)
+    Ensime.typeAtPoint(filename.getCanonicalPath, view.getTextArea.getCaretPosition) { t =>
+      view.getStatus.setMessage(t.friendlyName)
+    }
   }
 }

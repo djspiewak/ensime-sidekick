@@ -100,8 +100,43 @@ trait EnsimeProtocolComponent extends BackendComponent {
       dispatchSwank(id, SExp(key("swank:type-completion"), file, offset, prefix))
     }
     
-    def inspectTypeAtPoint(file: String, offset: Int) {
-      dispatchSwank(callId(), SExp("swank:inspect-type-at-point", file, offset))
+    def typeAtPoint(file: String, offset: Int)(callback: Type => Unit) {
+      def parseType(props: SExpList): Type = {
+        val map = props.toKeywordMap
+        
+        val StringAtom(name) = map(key(":name"))
+        val IntAtom(id) = map(key(":type-id"))
+        val StringAtom(fullName) = map(key(":full-name"))
+        
+        val pos = map get key(":pos") collect {
+          case props: SExpList => {
+            val map = props.toKeywordMap
+            
+            val StringAtom(file) = map(key(":file"))
+            val IntAtom(offset) = map(key(":offset"))
+            
+            Location(file, offset)
+          }
+        }
+        
+        val outerTypeId = map get key(":outer-type-id") collect { case IntAtom(i) => i }
+        
+        val args = map get key(":type-args") collect {
+          case results: SExpList => results collect {
+            case props: SExpList => parseType(props)
+          } toList
+        } getOrElse Nil
+        
+        Type(name, id, fullName, pos, outerTypeId, args)
+      }
+      
+      val id = callId()
+      
+      registerReturn(id) {
+        case results: SExpList => callback(parseType(results))
+      }
+      
+      dispatchSwank(id, SExp(key("swank:type-at-point"), file, offset))
     }
     
     private def dispatchSwank(id: Int, sexp: SExp) {
@@ -126,7 +161,7 @@ trait EnsimeProtocolComponent extends BackendComponent {
     def initProject(rootDir: String)
     
     def typeCompletion(file: String, offset: Int, prefix: String)(callback: List[CompletionResult] => Unit)
-    def inspectTypeAtPoint(file: String, offset: Int)
+    def typeAtPoint(file: String, offset: Int)(callback: Type => Unit)
   }
 }
 
@@ -136,4 +171,11 @@ object EnsimeProtocol {
   case class CompletionResult(name: String, typeSig: String, typeId: Int, isCallable: Boolean)
   
   case class Note(msg: String, begin: Int, end: Int, line: Int, column: Int, file: String)
+  
+  case class Type(name: String, id: Int, fullName: String, pos: Option[Location], outerTypeId: Option[Int], args: List[Type]) {
+    def friendlyName: String =
+      "%s%s".format(name, if (args.isEmpty) "" else args map { _.friendlyName } mkString("[", ", ", "]"))
+  }
+  
+  case class Location(file: String, offset: Int)
 }

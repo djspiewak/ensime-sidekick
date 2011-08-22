@@ -8,7 +8,7 @@
     </ACTION>
     <ACTION NAME="ensime-inspect-type">
         <CODE>
-            com.codecommit.es.EnsimePlugin.inspectType(view);
+            com.codecommit.es.EnsimePlugin.determineType(view);
         </CODE>
     </ACTION>
 </ACTIONS>
