@@ -24,6 +24,21 @@ trait EnsimeProtocolComponent extends BackendComponent {
         }
       }
       
+      case SExpList(KeywordAtom(":background-message") :: _ :: StringAtom(msg) :: Nil) =>
+        handler.backgroundMessage(msg)
+      
+      case SExpList(KeywordAtom(":clear-all-scala-notes") :: TruthAtom() :: Nil) =>
+        handler.clearAll()
+      
+      case SExpList(KeywordAtom(":compiler-ready") :: TruthAtom() :: Nil) =>
+        handler.compilerReady()
+      
+      case SExpList(KeywordAtom(":full-typecheck-finished") :: TruthAtom() :: Nil) =>
+        handler.fullTypecheckFinished()
+      
+      case SExpList(KeywordAtom(":indexer-ready") :: TruthAtom() :: Nil) =>
+        handler.indexerReady()
+      
       case other => handler.unhandled(other)
     }
   }
@@ -113,4 +128,6 @@ object EnsimeProtocol {
   case class ConnectionInfo(port: Option[Int], name: String, machine: Option[String], features: List[String], version: String)
   
   case class CompletionResult(name: String, typeSig: String, typeId: Int, isCallable: Boolean)
+  
+  case class Note(msg: String, begin: Int, end: Int, line: Int, column: Int, file: String)
 }
