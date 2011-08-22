@@ -1,5 +1,6 @@
 package com.codecommit
 package es
+package client
 
 import scala.util.parsing.input.CharSequenceReader
 

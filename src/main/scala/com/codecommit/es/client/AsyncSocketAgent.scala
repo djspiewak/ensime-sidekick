@@ -1,5 +1,6 @@
 package com.codecommit
 package es
+package client
 
 import java.io.{BufferedWriter, InputStreamReader, Reader, OutputStreamWriter}
 import java.net.Socket
