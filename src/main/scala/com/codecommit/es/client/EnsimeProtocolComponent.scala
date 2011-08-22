@@ -72,7 +72,7 @@ trait EnsimeProtocolComponent extends BackendComponent {
     }
     
     def initProject(rootDir: String) {
-      dispatchSwank(callId(), SExp(key("swank:init-project"), propList(":root-dir" -> StringAtom(rootDir))))
+      dispatchSwank(callId(), SExp(key("swank:init-project"), propList(":root-dir" -> StringAtom(rootDir), ":use-sbt" -> TruthAtom())))
     }
     
     def typeCompletion(file: String, offset: Int, prefix: String)(callback: List[CompletionResult] => Unit) {
