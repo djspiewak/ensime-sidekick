@@ -40,6 +40,34 @@ trait EnsimeProtocolComponent extends BackendComponent {
       case SExpList(KeywordAtom(":indexer-ready") :: TruthAtom() :: Nil) =>
         handler.indexerReady()
       
+      case se @ SExpList(KeywordAtom(":scala-notes") :: (props: SExpList) :: Nil) => {
+        import SExp._
+        
+        val map = props.toKeywordMap
+        
+        val SExpList(notes) = map(key(":notes"))
+        for (noteProps @ SExpList(_) <- notes) {
+          val noteMap = noteProps.toKeywordMap
+          
+          val SymbolAtom(severity) = noteMap(key(":severity"))
+          
+          val StringAtom(msg) = noteMap(key(":msg"))
+          val IntAtom(begin) = noteMap(key(":beg"))
+          val IntAtom(end) = noteMap(key(":end"))
+          val IntAtom(line) = noteMap(key(":line"))
+          val IntAtom(column) = noteMap(key(":col"))
+          val StringAtom(file) = noteMap(key(":file"))
+          
+          val note = Note(msg, begin, end, line, column, file)
+          
+          if (severity == "error") {
+            handler.error(note)
+          } else {
+            handler.unhandled(se)
+          }
+        }
+      }
+      
       case other => handler.unhandled(other)
     }
   }

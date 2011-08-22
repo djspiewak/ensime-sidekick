@@ -39,7 +39,7 @@ initialCommands := """
 	    println("Indexer ready!")
 	  }
 	  def error(note: Note) {
-	    printf("[error] %s:%d: %s", note.file, note.line, note.msg)
+	    printf("[error] %s:%d: %s\n", note.file, note.line, note.msg)
 	  }
       def unhandled(sexp: util.SExp) = println(sexp.toReadableString)
     }

@@ -1,6 +1,8 @@
 package com.codecommit
 package es
 
+import errorlist.DefaultErrorSource
+
 import org.gjt.sp.jedit
 import jedit.{jEdit => JEdit}
 import jedit.{EBMessage, EBPlugin, View}
@@ -38,6 +40,7 @@ class EnsimePlugin extends EBPlugin {
 }
 
 object EnsimePlugin extends EnsimeProtocolComponent with EnsimeBackendComponent {
+  var knownErrorSources = Set[DefaultErrorSource]()       // I hate jEdit...
   
   // TODO this should be configurable
   lazy val EnsimeHome = new File("/Users/daniel/Local/ensime_2.9.0-1-0.6.1")
