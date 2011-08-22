@@ -6,7 +6,7 @@
             com.codecommit.es.EnsimePlugin.initProject(view.getBuffer().getPath());
         </CODE>
     </ACTION>
-    <ACTION NAME="ensime-inspect-type">
+    <ACTION NAME="ensime.inspect-type">
         <CODE>
             com.codecommit.es.EnsimePlugin.determineType(view);
         </CODE>
