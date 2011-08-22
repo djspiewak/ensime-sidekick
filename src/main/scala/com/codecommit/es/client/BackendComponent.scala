@@ -66,7 +66,7 @@ trait EnsimeBackendComponent extends BackendComponent {
       agent.socket.close()
       
       // kill ensime server by any means necessary
-      Process("/bin/sh" :: "-c" :: "kill $(pgrep -f '" + portFile.getCanonicalPath + "')" :: Nil).run()
+      Process("/bin/sh" :: "-c" :: "kill $(/opt/local/bin/pgrep -f '" + portFile.getCanonicalPath + "')" :: Nil).run()
       proc.destroy()
     }
   }
