@@ -75,4 +75,11 @@ object EnsimePlugin extends EnsimeProtocolComponent with EnsimeBackendComponent 
       view.getStatus.setMessage(t.friendlyName)
     }
   }
+  
+  def typecheckFile(view: View) {
+    val buffer = view.getBuffer
+    if (!buffer.isDirty) {
+      Ensime.typecheckFile(new File(buffer.getPath).getCanonicalPath)
+    }
+  }
 }
