@@ -20,58 +20,62 @@ trait EnsimeProtocolComponent extends BackendComponent {
    */
   def handle(handler: BackendHandler)(chunk: String) {
     val sexp = SExp.read(new CharSequenceReader(chunk))
-    sexp match {
-      case SExpList(KeywordAtom(":return") :: SExpList(KeywordAtom(":ok") :: inner :: Nil) :: IntAtom(id) :: Nil) => {
-        returns get id foreach { _(inner) }
-        returnLock synchronized {
-          returns -= id
-        }
-      }
-      
-      case SExpList(KeywordAtom(":background-message") :: _ :: StringAtom(msg) :: Nil) =>
-        handler.backgroundMessage(msg)
-      
-      case SExpList(KeywordAtom(":clear-all-scala-notes") :: TruthAtom() :: Nil) =>
-        handler.clearAll()
-      
-      case SExpList(KeywordAtom(":compiler-ready") :: TruthAtom() :: Nil) =>
-        handler.compilerReady()
-      
-      case SExpList(KeywordAtom(":full-typecheck-finished") :: TruthAtom() :: Nil) =>
-        handler.fullTypecheckFinished()
-      
-      case SExpList(KeywordAtom(":indexer-ready") :: TruthAtom() :: Nil) =>
-        handler.indexerReady()
-      
-      case se @ SExpList(KeywordAtom(":scala-notes") :: (props: SExpList) :: Nil) => {
-        import SExp._
-        
-        val map = props.toKeywordMap
-        
-        val SExpList(notes) = map(key(":notes"))
-        for (noteProps @ SExpList(_) <- notes) {
-          val noteMap = noteProps.toKeywordMap
-          
-          val SymbolAtom(severity) = noteMap(key(":severity"))
-          
-          val StringAtom(msg) = noteMap(key(":msg"))
-          val IntAtom(begin) = noteMap(key(":beg"))
-          val IntAtom(end) = noteMap(key(":end"))
-          val IntAtom(line) = noteMap(key(":line"))
-          val IntAtom(column) = noteMap(key(":col"))
-          val StringAtom(file) = noteMap(key(":file"))
-          
-          val note = Note(msg, begin, end, line, column, file)
-          
-          if (severity == "error") {
-            handler.error(note)
-          } else {
-            handler.unhandled(se)
+    try {
+      sexp match {
+        case SExpList(KeywordAtom(":return") :: SExpList(KeywordAtom(":ok") :: inner :: Nil) :: IntAtom(id) :: Nil) => {
+          returns get id foreach { _(inner) }
+          returnLock synchronized {
+            returns -= id
           }
         }
+        
+        case SExpList(KeywordAtom(":background-message") :: _ :: StringAtom(msg) :: Nil) =>
+          handler.backgroundMessage(msg)
+        
+        case SExpList(KeywordAtom(":clear-all-scala-notes") :: TruthAtom() :: Nil) =>
+          handler.clearAll()
+        
+        case SExpList(KeywordAtom(":compiler-ready") :: TruthAtom() :: Nil) =>
+          handler.compilerReady()
+        
+        case SExpList(KeywordAtom(":full-typecheck-finished") :: TruthAtom() :: Nil) =>
+          handler.fullTypecheckFinished()
+        
+        case SExpList(KeywordAtom(":indexer-ready") :: TruthAtom() :: Nil) =>
+          handler.indexerReady()
+        
+        case se @ SExpList(KeywordAtom(":scala-notes") :: (props: SExpList) :: Nil) => {
+          import SExp._
+          
+          val map = props.toKeywordMap
+          
+          val SExpList(notes) = map(key(":notes"))
+          for (noteProps @ SExpList(_) <- notes) {
+            val noteMap = noteProps.toKeywordMap
+            
+            val SymbolAtom(severity) = noteMap(key(":severity"))
+            
+            val StringAtom(msg) = noteMap(key(":msg"))
+            val IntAtom(begin) = noteMap(key(":beg"))
+            val IntAtom(end) = noteMap(key(":end"))
+            val IntAtom(line) = noteMap(key(":line"))
+            val IntAtom(column) = noteMap(key(":col"))
+            val StringAtom(file) = noteMap(key(":file"))
+            
+            val note = Note(msg, begin, end, line, column, file)
+            
+            if (severity == "error") {
+              handler.error(note)
+            } else {
+              handler.unhandled(se)
+            }
+          }
+        }
+        
+        case other => handler.unhandled(other)
       }
-      
-      case other => handler.unhandled(other)
+    } catch {
+      case e => e.printStackTrace
     }
   }
   
