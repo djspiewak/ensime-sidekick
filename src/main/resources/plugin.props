@@ -5,9 +5,11 @@ plugin.com.codecommit.es.EnsimePlugin.version=0.1
 
 plugin.com.codecommit.es.EnsimePlugin.menu=ensime \
   - \
-  ensime.inspect-type
+  ensime.inspect-type \
+  ensime.jump-to-declaration
 options.menu.label=ENSIME
 ensime.label=Initialize Project
 ensime.inspect-type.label=Inspect Type
+ensime.jump-to-declaration.label=Jump to Declaration
 
 plugin.com.codecommit.es.EnsimePlugin.depend.0=plugin sidekick.SideKickPlugin 1.2

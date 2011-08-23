@@ -11,4 +11,9 @@
             com.codecommit.es.EnsimePlugin.determineType(view);
         </CODE>
     </ACTION>
+    <ACTION NAME="ensime.jump-to-declaration">
+        <CODE>
+            com.codecommit.es.EnsimePlugin.jumpToDeclaration(view);
+        </CODE>
+    </ACTION>
 </ACTIONS>

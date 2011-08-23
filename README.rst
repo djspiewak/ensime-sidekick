@@ -11,7 +11,8 @@ Features
 ========
 
 * Error reporting (type checking on save)
-* Inspect type (determinine what type is inferred for a particular symbol)
+* Inspect type (determine what type is inferred for a particular symbol)
+* Jump to declaration
 
 Er...that's about it right now.  :-)  I have a proof-of-concept for popup
 completion (intellisense), but it's going to take a fair amount of effort to make
@@ -87,6 +88,14 @@ action (I have this bound to A+s A+t).  The type is displayed in the status bar.
 All types should be displayed in a *reasonably* friendly format, though I haven't
 yet implemented special formatting support for arrow types (functions).  These
 types will display, but they'll be a little weird to read.
+
+It's worth noting that ENSIME seems much happier with most functionality *after*
+it has done a typecheck on the project.  jEdit won't trigger this automatically
+on startup, so if you're trying out the functionality immediately after initializing
+the ENSIME project, you may want to save a file (to trigger the typecheck) before
+running any of the actual ENSIME actions.  This is only required once (in fact,
+ENSIME actions *should* work just fine even in a dirty buffer once the type
+checking has been run).
 
 Popup completion is currently disabled, for which you should be very grateful.
 The implementation is in ``EnsimeParser.scala`` and ``EnsimeProtocolComponent.scala``

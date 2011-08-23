@@ -85,4 +85,25 @@ object EnsimePlugin extends EnsimeProtocolComponent with EnsimeBackendComponent 
       Ensime.typecheckFile(new File(buffer.getPath).getCanonicalPath)
     }
   }
+  
+  def jumpToDeclaration(view: View) {
+    val buffer = view.getBuffer
+    
+    val filename = if (buffer.isDirty) {
+      buffer.autosave()
+      buffer.getAutosaveFile
+    } else {
+      new File(buffer.getPath)
+    }
+    
+    Ensime.symbolAtPoint(filename.getCanonicalPath, view.getTextArea.getCaretPosition) {
+      case Some(loc) => {
+        val buffer = JEdit.openFile(view, loc.file)
+        val pane = view.goToBuffer(buffer)
+        pane.getTextArea.setCaretPosition(loc.offset)
+      }
+      
+      case None => view.getStatus.setMessage("ENSIME: Could not locate declaration!")
+    }
+  }
 }

@@ -180,6 +180,30 @@ trait EnsimeProtocolComponent extends BackendComponent {
       dispatchSwank(callId(), SExp(key("swank:typecheck-file"), file))
     }
     
+    def symbolAtPoint(file: String, offset: Int)(callback: Option[Location] => Unit) {
+      val id = callId()
+      
+      registerReturn(id) {
+        case results: SExpList => {
+          val map = results.toKeywordMap
+          val optDeclPos = map get key(":decl-pos") collect { case se: SExpList => se }
+          
+          val loc = for (declPosSE <- optDeclPos) yield {
+            val declPos = declPosSE.toKeywordMap
+            
+            val StringAtom(file) = declPos(key(":file"))
+            val IntAtom(offset) = declPos(key(":offset"))
+            
+            Location(file, offset)
+          }
+          
+          callback(loc)
+        }
+      }
+      
+      dispatchSwank(id, SExp(key("swank:symbol-at-point"), file, offset))
+    }
+    
     private def dispatchSwank(id: Int, sexp: SExp) {
       Backend.send(SExp(key(":swank-rpc"), sexp, id).toWireString)
     }
@@ -204,6 +228,7 @@ trait EnsimeProtocolComponent extends BackendComponent {
     def typeCompletion(file: String, offset: Int, prefix: String)(callback: List[CompletionResult] => Unit)
     def typeAtPoint(file: String, offset: Int)(callback: Type => Unit)
     def typecheckFile(file: String)
+    def symbolAtPoint(file: String, offset: Int)(callback: Option[Location] => Unit)
   }
 }
 
