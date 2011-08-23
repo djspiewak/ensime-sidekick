@@ -2,6 +2,9 @@ package com.codecommit
 package es
 package client
 
+import java.io.File
+
+import scala.io.Source
 import scala.util.parsing.input.CharSequenceReader
 
 import util._
@@ -100,7 +103,9 @@ trait EnsimeProtocolComponent extends BackendComponent {
     }
     
     def initProject(rootDir: String) {
-      dispatchSwank(callId(), SExp(key("swank:init-project"), propList(":root-dir" -> StringAtom(rootDir), ":use-sbt" -> TruthAtom())))
+      val src = Source fromFile new File(rootDir, ".ensime")
+      val sexp = SExp.read(new CharSequenceReader(src.mkString))
+      dispatchSwank(callId(), SExp(key("swank:init-project"), sexp))
     }
     
     def typeCompletion(file: String, offset: Int, prefix: String)(callback: List[CompletionResult] => Unit) {
@@ -134,7 +139,7 @@ trait EnsimeProtocolComponent extends BackendComponent {
         
         val StringAtom(name) = map(key(":name"))
         val IntAtom(id) = map(key(":type-id"))
-        val StringAtom(fullName) = map(key(":full-name"))
+        val fullName = map get key(":full-name") collect { case StringAtom(s) => s }
         
         val pos = map get key(":pos") collect {
           case props: SExpList => {
@@ -205,7 +210,7 @@ object EnsimeProtocol {
   
   case class Note(msg: String, begin: Int, end: Int, line: Int, column: Int, file: String)
   
-  case class Type(name: String, id: Int, fullName: String, pos: Option[Location], outerTypeId: Option[Int], args: List[Type]) {
+  case class Type(name: String, id: Int, fullName: Option[String], pos: Option[Location], outerTypeId: Option[Int], args: List[Type]) {
     def friendlyName: String =
       "%s%s".format(name, if (args.isEmpty) "" else args map { _.friendlyName } mkString("[", ", ", "]"))
   }
