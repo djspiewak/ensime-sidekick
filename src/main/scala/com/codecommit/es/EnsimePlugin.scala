@@ -8,7 +8,7 @@ import jedit.{jEdit => JEdit}
 import jedit.{EBMessage, EBPlugin, View}
 import jedit.msg.ViewUpdate
 
-import java.awt.EventQueue
+import java.awt.Toolkit
 import java.io.File
 
 import javax.swing.JOptionPane
@@ -103,7 +103,10 @@ object EnsimePlugin extends EnsimeProtocolComponent with EnsimeBackendComponent 
         pane.getTextArea.setCaretPosition(loc.offset)
       }
       
-      case None => view.getStatus.setMessage("ENSIME: Could not locate declaration!")
+      case None => {
+        Toolkit.getDefaultToolkit.beep()
+        view.getStatus.setMessage("ENSIME: Could not locate declaration!")
+      }
     }
   }
 }
