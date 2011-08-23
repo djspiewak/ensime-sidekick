@@ -8,7 +8,7 @@ import jedit.{jEdit => JEdit}
 import jedit.{EBMessage, EBPlugin, View}
 import jedit.msg.ViewUpdate
 
-import java.awt.Toolkit
+import java.awt.{EventQueue, Toolkit}
 import java.io.File
 
 import javax.swing.JOptionPane
@@ -61,7 +61,11 @@ object EnsimePlugin extends EnsimeProtocolComponent with EnsimeBackendComponent 
         false
     } map { _.getCanonicalPath } getOrElse canonicalPath
     
-    Ensime.initProject(JOptionPane.showInputDialog("ENSIME Project Root:", projectPath))
+    EventQueue.invokeLater(new Runnable {
+      def run() {
+        Ensime.initProject(JOptionPane.showInputDialog("ENSIME Project Root:", projectPath))
+      }
+    })
   }
   
   def determineType(view: View) {
@@ -98,9 +102,14 @@ object EnsimePlugin extends EnsimeProtocolComponent with EnsimeBackendComponent 
     
     Ensime.symbolAtPoint(filename.getCanonicalPath, view.getTextArea.getCaretPosition) {
       case Some(loc) => {
-        val buffer = JEdit.openFile(view, loc.file)
-        val pane = view.goToBuffer(buffer)
-        pane.getTextArea.setCaretPosition(loc.offset)
+        EventQueue.invokeLater(new Runnable {
+          def run() {
+            val buffer = JEdit.openFile(view, loc.file)
+            val pane = view.goToBuffer(buffer)
+            val area = pane.getTextArea
+            area.setCaretPosition(loc.offset)
+          }
+        })
       }
       
       case None => {
