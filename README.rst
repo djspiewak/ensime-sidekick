@@ -4,6 +4,8 @@ initializes individual projects based on explicit user interaction.  This was
 done very intentionally, since the Emacs mode of interaction is more flexible and
 certainly more amenable to one-off file editing.
 
+.. _ENSIME: http://aemon.com/file_dump/ensime_manual.html
+
 
 Features
 ========
