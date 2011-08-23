@@ -8,7 +8,7 @@ import org.gjt.sp.jedit.View
 import client._
 import util._
 
-class SidekickBackendHandler extends BackendHandler {
+class SidekickBackendHandler(val errorSource: DefaultErrorSource) extends BackendHandler {
   import EnsimeProtocol._
   
   var views = Set[View]()
@@ -18,7 +18,7 @@ class SidekickBackendHandler extends BackendHandler {
   }
   
   def clearAll() {
-    EnsimePlugin.knownErrorSources collect { case src: DefaultErrorSource => src.clear() }
+    errorSource.clear()
   }
   
   def compilerReady() {
@@ -35,11 +35,12 @@ class SidekickBackendHandler extends BackendHandler {
   
   def error(note: Note) {
     val error = new DefaultErrorSource.DefaultError(_: ErrorSource, ErrorSource.ERROR, note.file, note.line - 1, note.column - 1, note.column - 1 + (note.end - note.begin), note.msg)
-    EnsimePlugin.knownErrorSources foreach { src => src.addError(error(src)) }
+    errorSource.addError(error(errorSource))
   }
   
-  // hack
-  def unhandled(msg: SExp) {}
+  def unhandled(msg: SExp) {
+    System.err.println("Unhandled SExp: %s".format(msg.toReadableString))
+  }
   
   private def viewMessage(msg: String) {
     views foreach { _.getStatus.setMessage(msg) }

@@ -64,11 +64,7 @@ trait EnsimeProtocolComponent extends BackendComponent {
             
             val note = Note(msg, begin, end, line, column, file)
             
-            if (severity == "error") {
-              handler.error(note)
-            } else {
-              handler.unhandled(se)
-            }
+            handler.error(note)
           }
         }
         

@@ -1,7 +1,7 @@
 package com.codecommit
 package es
 
-import errorlist.DefaultErrorSource
+import errorlist.{DefaultErrorSource, ErrorSource}
 
 import org.gjt.sp.jedit
 import jedit.{jEdit => JEdit}
@@ -16,11 +16,12 @@ import javax.swing.JOptionPane
 import client._
 
 class EnsimePlugin extends EBPlugin {
-  val handler = new SidekickBackendHandler
+  val handler = new SidekickBackendHandler(new DefaultErrorSource("ENSIME"))
   
   override def start() {
     handler.views = Set(JEdit.getViews: _*)
     
+    ErrorSource.registerErrorSource(handler.errorSource)
     EnsimePlugin.Backend.start(EnsimePlugin.handle(handler))
   }
   
@@ -35,13 +36,12 @@ class EnsimePlugin extends EBPlugin {
   }
   
   override def stop() {
+    ErrorSource.unregisterErrorSource(handler.errorSource)
     EnsimePlugin.Backend.stop()
   }
 }
 
 object EnsimePlugin extends EnsimeProtocolComponent with EnsimeBackendComponent {
-  var knownErrorSources = Set[DefaultErrorSource]()       // I hate jEdit...
-  
   // TODO this should be configurable
   lazy val EnsimeHome = new File("/Users/daniel/Local/ensime_2.9.0-1-0.6.1")
   

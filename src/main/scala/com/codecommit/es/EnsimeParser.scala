@@ -51,7 +51,6 @@ class EnsimeParser extends SideKickParser("ensime") {
   }
   
   def parse(buffer: Buffer, errorSource: DefaultErrorSource): SideKickParsedData = {
-    EnsimePlugin.knownErrorSources += errorSource
     EnsimePlugin.Ensime.typecheckFile(buffer.getPath)
     new SideKickParsedData(buffer.getPath)
   }
