@@ -21,16 +21,9 @@ class EnsimeParser extends SideKickParser("ensime") {
   override def complete(editPane: EditPane, caret: Int): SideKickCompletion = {
     val buffer = editPane.getBuffer
     
-    val file = if (buffer.isDirty) {
-      buffer.autosave()
-      buffer.getAutosaveFile
-    } else {
-      new File(buffer.getPath)
-    }
-    
     var finalResults: List[CompletionResult] = null
     val signal = new AnyRef
-    EnsimePlugin.Ensime.typeCompletion(file.getCanonicalPath, caret, "") { results =>
+    EnsimePlugin.autoComplete(buffer, caret, "") { results =>
       finalResults = results
       signal synchronized {
         signal.notifyAll()
@@ -51,7 +44,7 @@ class EnsimeParser extends SideKickParser("ensime") {
   }
   
   def parse(buffer: Buffer, errorSource: DefaultErrorSource): SideKickParsedData = {
-    EnsimePlugin.Ensime.typecheckFile(buffer.getPath)
-    new SideKickParsedData(buffer.getPath)
+    EnsimePlugin.typecheckFile(buffer)
+    null
   }
 }

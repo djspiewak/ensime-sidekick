@@ -3,7 +3,7 @@
 <ACTIONS>
     <ACTION NAME="ensime">
         <CODE>
-            com.codecommit.es.EnsimePlugin.initProject(view.getBuffer().getPath());
+            com.codecommit.es.EnsimePlugin.initProject(view);
         </CODE>
     </ACTION>
     <ACTION NAME="ensime.inspect-type">

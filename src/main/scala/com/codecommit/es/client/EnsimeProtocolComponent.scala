@@ -4,6 +4,7 @@ package client
 
 import java.io.File
 
+import scala.collection.mutable
 import scala.io.Source
 import scala.util.parsing.input.CharSequenceReader
 
@@ -102,10 +103,25 @@ trait EnsimeProtocolComponent extends BackendComponent {
       dispatchSwank(id, SExp(key("swank:connection-info")))
     }
     
-    def initProject(file: String) {
-      val src = Source fromFile new File(file)
+    def initProject(projectFile: String)(callback: (Option[String], List[File]) => Unit) {
+      val src = Source fromFile new File(projectFile)
       val sexp = SExp.read(new CharSequenceReader(src.mkString))
-      dispatchSwank(callId(), SExp(key("swank:init-project"), sexp))
+      val id = callId()
+      
+      registerReturn(id) {
+        case results: SExpList => {
+          val props = results.toKeywordMap
+          
+          val projectName = props get key(":project-name") collect { case StringAtom(str) => str }
+          val SExpList(rootsSE) = props(key(":source-roots"))
+          
+          val roots = rootsSE collect { case StringAtom(root) => new File(root) } toList
+          
+          callback(projectName, roots)
+        }
+      }
+      
+      dispatchSwank(id, SExp(key("swank:init-project"), sexp))
     }
     
     def typeCompletion(file: String, offset: Int, prefix: String)(callback: List[CompletionResult] => Unit) {
@@ -219,7 +235,7 @@ trait EnsimeProtocolComponent extends BackendComponent {
   // TODO
   trait Ensime {
     def connectionInfo(callback: ConnectionInfo => Unit)
-    def initProject(rootDir: String)
+    def initProject(projectFile: String)(callback: (Option[String], List[File]) => Unit)
     
     def typeCompletion(file: String, offset: Int, prefix: String)(callback: List[CompletionResult] => Unit)
     def typeAtPoint(file: String, offset: Int)(callback: Type => Unit)
