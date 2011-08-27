@@ -45,12 +45,12 @@ object EnsimePlugin extends EnsimeProtocolComponent with EnsimeBackendComponent 
   // TODO this should be configurable
   lazy val EnsimeHome = new File("/Users/daniel/Local/ensime_2.9.0-1-0.6.1")
   
-  def initProject(path: String) {
+  def initProject(view: View) {
     def parentDirs(base: File): Stream[File] =
       base #:: (Option(base.getParent) map { new File(_) } map parentDirs getOrElse Stream.empty)
    
     // TODO compensate for slow (network) file systems
-    val canonicalPath = new File(path).getCanonicalPath
+    val canonicalPath = new File(view.getBuffer.getPath).getCanonicalPath
     
     val projectPath = parentDirs(new File(canonicalPath)) find { f =>
       val files = f.listFiles
@@ -59,11 +59,17 @@ object EnsimePlugin extends EnsimeProtocolComponent with EnsimeBackendComponent 
         files filter (null !=) map { _.getName } contains ".ensime"
       else
         false
-    } map { _.getCanonicalPath } getOrElse canonicalPath
+    } map { f => new File(f, ".ensime") } map { _.getCanonicalPath } getOrElse canonicalPath
     
     EventQueue.invokeLater(new Runnable {
       def run() {
-        Ensime.initProject(JOptionPane.showInputDialog("ENSIME Project Root:", projectPath))
+        val projectFile = JOptionPane.showInputDialog(view, "ENSIME Project File:", projectPath)
+        
+        if (new File(projectFile).exists) {
+          Ensime.initProject(projectFile)
+        } else {
+          JOptionPane.showMessageDialog(view, "Specified project file does not exist!", "Error", JOptionPane.ERROR_MESSAGE)
+        }
       }
     })
   }

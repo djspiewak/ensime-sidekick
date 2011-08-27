@@ -102,8 +102,8 @@ trait EnsimeProtocolComponent extends BackendComponent {
       dispatchSwank(id, SExp(key("swank:connection-info")))
     }
     
-    def initProject(rootDir: String) {
-      val src = Source fromFile new File(rootDir, ".ensime")
+    def initProject(file: String) {
+      val src = Source fromFile new File(file)
       val sexp = SExp.read(new CharSequenceReader(src.mkString))
       dispatchSwank(callId(), SExp(key("swank:init-project"), sexp))
     }
