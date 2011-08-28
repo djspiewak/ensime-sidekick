@@ -48,7 +48,10 @@ object EnsimePlugin {
   
   def stopAll() {
     lock synchronized {
-      instances.values foreach { _.Backend.stop() }
+      instances foreach { case (root, inst) =>
+        System.err.println("Stopping ENSIME backend at " + root)
+        inst.Backend.stop()
+      }
       instances = instances.empty
     }
   }
@@ -71,13 +74,13 @@ object EnsimePlugin {
       } map { f => new File(f, ".ensime") } map { _.getCanonicalPath } getOrElse canonicalPath
       
       val inst = new Instance(EnsimeHome)
-      inst.Backend.start(inst.handle(Handler))
       
       EventQueue.invokeLater(new Runnable {
         def run() {
           val projectFile = JOptionPane.showInputDialog(view, "ENSIME Project File:", projectPath)
           
           if (new File(projectFile).exists) {
+            inst.Backend.start(inst.handle(Handler))
             inst.Ensime.initProject(projectFile) { (projectName, sourceRoots) =>
               lock synchronized {
                 sourceRoots foreach { root => instances += (root -> inst) }
