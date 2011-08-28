@@ -13,7 +13,11 @@ import java.io.File
 
 import javax.swing.JOptionPane
 
+import scala.io.Source
+import scala.util.parsing.input.CharSequenceReader
+
 import client._
+import util._
 
 class EnsimePlugin extends EBPlugin {
   override def start() {
@@ -74,17 +78,33 @@ object EnsimePlugin {
           false
       } map { f => new File(f, ".ensime") } map { _.getCanonicalPath } getOrElse canonicalPath
       
-      val inst = new Instance(EnsimeHome)
-      
       EventQueue.invokeLater(new Runnable {
         def run() {
-          val projectFile = JOptionPane.showInputDialog(view, "ENSIME Project File:", projectPath)
+          val projectFileName = JOptionPane.showInputDialog(view, "ENSIME Project File:", projectPath)
+          val projectFile = new File(projectFileName)
           
-          if (new File(projectFile).exists) {
-            inst.Backend.start(inst.handle(Handler))
-            inst.Ensime.initProject(projectFile) { (projectName, sourceRoots) =>
-              lock synchronized {
-                sourceRoots foreach { root => instances += (root -> inst) }
+          if (projectFile.exists) {
+            val src = Source fromFile projectFile
+            val optProjectData = Option(SExp.read(new CharSequenceReader(src.mkString)))
+            
+            if (!optProjectData.isDefined) {
+              JOptionPane.showMessageDialog(view, "Project file is invalid.  Make sure it consists of a single s-expression.  (no comments!)", "Error", JOptionPane.ERROR_MESSAGE)
+            }
+            
+            for (projectData <- optProjectData) {
+              val home = projectData match {
+                case props: SExpList =>
+                  props.toKeywordMap get SExp.key(":ensime-home") collect { case StringAtom(str) => str } map { new File(_) } filter { _.exists } getOrElse EnsimeHome
+                
+                case _ => EnsimeHome
+              }
+              
+              val inst = new Instance(home)
+              inst.Backend.start(inst.handle(Handler))
+              inst.Ensime.initProject(projectData) { (projectName, sourceRoots) =>
+                lock synchronized {
+                  sourceRoots foreach { root => instances += (root -> inst) }
+                }
               }
             }
           } else {

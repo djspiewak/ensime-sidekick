@@ -5,7 +5,6 @@ package client
 import java.io.File
 
 import scala.collection.mutable
-import scala.io.Source
 import scala.util.parsing.input.CharSequenceReader
 
 import util._
@@ -103,9 +102,7 @@ trait EnsimeProtocolComponent extends BackendComponent {
       dispatchSwank(id, SExp(key("swank:connection-info")))
     }
     
-    def initProject(projectFile: String)(callback: (Option[String], List[File]) => Unit) {
-      val src = Source fromFile new File(projectFile)
-      val sexp = SExp.read(new CharSequenceReader(src.mkString))
+    def initProject(sexp: SExp)(callback: (Option[String], List[File]) => Unit) {
       val id = callId()
       
       registerReturn(id) {
@@ -235,7 +232,7 @@ trait EnsimeProtocolComponent extends BackendComponent {
   // TODO
   trait Ensime {
     def connectionInfo(callback: ConnectionInfo => Unit)
-    def initProject(projectFile: String)(callback: (Option[String], List[File]) => Unit)
+    def initProject(projectData: SExp)(callback: (Option[String], List[File]) => Unit)
     
     def typeCompletion(file: String, offset: Int, prefix: String)(callback: List[CompletionResult] => Unit)
     def typeAtPoint(file: String, offset: Int)(callback: Type => Unit)
