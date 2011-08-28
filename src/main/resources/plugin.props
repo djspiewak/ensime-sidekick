@@ -13,3 +13,6 @@ ensime.inspect-type.label=Inspect Type
 ensime.jump-to-declaration.label=Jump to Declaration
 
 plugin.com.codecommit.es.EnsimePlugin.depend.0=plugin sidekick.SideKickPlugin 1.2
+
+sidekick.parser.ensime.label=ENSIME
+mode.scala.sidekick.parser=ensime
