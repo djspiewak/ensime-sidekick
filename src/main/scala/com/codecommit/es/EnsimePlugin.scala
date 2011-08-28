@@ -168,10 +168,18 @@ object EnsimePlugin {
         case Some(loc) => {
           EventQueue.invokeLater(new Runnable {
             def run() {
+              type Navigator = { def addToHistory() }
+              type NavigatorPlugin = { def getNavigator(view: View): Navigator }
+              
+              val navPlugin = Option(JEdit.getPlugin("ise.plugin.nav.NavigatorPlugin")) map { _.asInstanceOf[NavigatorPlugin] }
+              navPlugin foreach { _.getNavigator(view).addToHistory() }
+              
               val buffer = JEdit.openFile(view, loc.file)
               val pane = view.goToBuffer(buffer)
               val area = pane.getTextArea
               area.setCaretPosition(loc.offset)
+              
+              navPlugin foreach { _.getNavigator(view).addToHistory() }
             }
           })
         }
