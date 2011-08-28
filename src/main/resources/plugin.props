@@ -3,6 +3,11 @@ plugin.com.codecommit.es.EnsimePlugin.name=ENSIME
 plugin.com.codecommit.es.EnsimePlugin.author=Daniel Spiewak
 plugin.com.codecommit.es.EnsimePlugin.version=0.1
 
+plugin.com.codecommit.es.EnsimePlugin.option-group=ensime
+
+options.ensime.label=ENSIME
+options.ensime.code=new com.codecommit.es.EnsimeOptionPane();
+
 plugin.com.codecommit.es.EnsimePlugin.menu=ensime \
   - \
   ensime.inspect-type \

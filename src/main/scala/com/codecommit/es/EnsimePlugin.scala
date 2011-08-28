@@ -43,8 +43,9 @@ object EnsimePlugin {
   private var instances = Map[File, Instance]()
   private val lock = new AnyRef
   
-  // TODO this should be configurable
-  val EnsimeHome = new File("/Users/daniel/Local/ensime_2.9.0-1-0.6.1")
+  def EnsimeHome = new File(Option(JEdit.getProperty(EnsimeHomeProperty)) getOrElse "/Users/daniel/Local/ensime_2.9.0-1-0.6.1")
+  
+  val EnsimeHomeProperty = "ensime.home"
   
   def stopAll() {
     lock synchronized {
