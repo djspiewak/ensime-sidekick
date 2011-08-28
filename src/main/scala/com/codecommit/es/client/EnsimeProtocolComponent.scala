@@ -208,6 +208,8 @@ trait EnsimeProtocolComponent extends BackendComponent {
           
           callback(loc)
         }
+        
+        case NilAtom() => callback(None)
       }
       
       dispatchSwank(id, SExp(key("swank:symbol-at-point"), file, offset))
