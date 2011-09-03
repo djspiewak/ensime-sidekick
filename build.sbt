@@ -2,7 +2,7 @@ name := "EnsimeSidekick"
 
 version := "0.1"
 
-scalaVersion := "2.9.0-1"
+scalaVersion := "2.9.1"
 
 unmanagedJars in Compile += {
   Attributed.blank(new File("/Users/daniel/Library/jEdit/jars/ErrorList.jar"))
@@ -21,7 +21,7 @@ initialCommands := """
     import client._
     import java.io.File
     val Cake = new EnsimeProtocolComponent with EnsimeBackendComponent {
-      lazy val EnsimeHome = new File("/Users/daniel/Local/ensime_2.9.0-1-0.6.1")
+      lazy val EnsimeHome = new File("/Users/daniel/Local/ensime_2.9.1-0.6.RC3")
     }
     trait DebugBackendHandler extends BackendHandler {
       import EnsimeProtocol._

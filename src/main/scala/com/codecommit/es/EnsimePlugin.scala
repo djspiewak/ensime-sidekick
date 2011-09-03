@@ -47,7 +47,7 @@ object EnsimePlugin {
   private var instances = Map[File, Instance]()
   private val lock = new AnyRef
   
-  def EnsimeHome = new File(Option(JEdit.getProperty(EnsimeHomeProperty)) getOrElse "/Users/daniel/Local/ensime_2.9.0-1-0.6.1")
+  def EnsimeHome = new File(Option(JEdit.getProperty(EnsimeHomeProperty)) getOrElse "/Users/daniel/Local/ensime_2.9.1-0.6.RC3")
   
   val EnsimeHomeProperty = "ensime.home"
   
