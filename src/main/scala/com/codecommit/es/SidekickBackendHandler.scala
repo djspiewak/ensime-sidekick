@@ -3,15 +3,14 @@ package es
 
 import errorlist.{DefaultErrorSource, ErrorSource}
 
-import org.gjt.sp.jedit.View
+import org.gjt.sp.jedit
+import jedit.{jEdit => JEdit, View}
 
 import client._
 import util._
 
 class SidekickBackendHandler(val errorSource: DefaultErrorSource) extends BackendHandler {
   import EnsimeProtocol._
-  
-  var views = Set[View]()
   
   def backgroundMessage(msg: String) {
     viewMessage("ENSIME: " + msg)
@@ -43,6 +42,6 @@ class SidekickBackendHandler(val errorSource: DefaultErrorSource) extends Backen
   }
   
   private def viewMessage(msg: String) {
-    views foreach { _.getStatus.setMessage(msg) }
+    JEdit.getViews foreach { _.getStatus.setMessage(msg) }
   }
 }

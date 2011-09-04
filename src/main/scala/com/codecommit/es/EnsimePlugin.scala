@@ -21,29 +21,18 @@ import util._
 
 class EnsimePlugin extends EBPlugin {
   override def start() {
-    EnsimePlugin.Handler.views = Set(JEdit.getViews: _*)
-    ErrorSource.registerErrorSource(EnsimePlugin.Handler.errorSource)
   }
   
   override def handleMessage(message: EBMessage) = message match {
-    case update: ViewUpdate if update.getWhat == ViewUpdate.CREATED =>
-      EnsimePlugin.Handler.views += update.getView
-    
-    case update: ViewUpdate if update.getWhat == ViewUpdate.CLOSED =>
-      EnsimePlugin.Handler.views -= update.getView
-    
     case _ =>
   }
   
   override def stop() {
-    ErrorSource.unregisterErrorSource(EnsimePlugin.Handler.errorSource)
     EnsimePlugin.stopAll()
   }
 }
 
 object EnsimePlugin {
-  val Handler = new SidekickBackendHandler(new DefaultErrorSource("ENSIME"))
-  
   private var instances = Map[File, Instance]()
   private val lock = new AnyRef
   
@@ -55,7 +44,7 @@ object EnsimePlugin {
     lock synchronized {
       instances foreach { case (root, inst) =>
         System.err.println("Stopping ENSIME backend at " + root)
-        inst.Backend.stop()
+        inst.stop()
       }
       instances = instances.empty
     }
@@ -98,7 +87,7 @@ object EnsimePlugin {
               val home = projectData2.toKeywordMap get SExp.key(":ensime-home") collect { case StringAtom(str) => str } map { new File(_) } filter { _.exists } getOrElse EnsimeHome
               
               val inst = new Instance(home)
-              inst.Backend.start(inst.handle(Handler))
+              inst.start()
               inst.Ensime.initProject(projectData2) { (projectName, sourceRoots) =>
                 lock synchronized {
                   sourceRoots foreach { root => instances += (root -> inst) }
@@ -197,4 +186,15 @@ object EnsimePlugin {
     base #:: (Option(base.getParent) map { new File(_) } map parentDirs getOrElse Stream.empty)
 }
 
-class Instance(val EnsimeHome: File) extends EnsimeProtocolComponent with EnsimeBackendComponent
+class Instance(val EnsimeHome: File) extends EnsimeProtocolComponent with EnsimeBackendComponent {
+  val Handler = new SidekickBackendHandler(new DefaultErrorSource("ENSIME"))
+  
+  def start() {
+    ErrorSource.registerErrorSource(Handler.errorSource)
+    Backend.start(handle(Handler))
+  }
+  
+  def stop() {
+    ErrorSource.unregisterErrorSource(Handler.errorSource)
+  }
+}
