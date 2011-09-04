@@ -46,18 +46,19 @@ Unfortunately, this too is specific to my machine.  Less so, but still using
 hard-coded paths.  It should be very obvious how to make this process more generic
 though, or even to perform the installation yourself.  All you need to do is
 copy the packaged JAR as well as ``scala-library.jar`` into the ``jEdit/jars/``
-directory.  Once that is done, restart jEdit.
+directory.  Once that is done, restart jEdit (or rescan the plugins directory
+using the Plugin Manager and load the ENSIME plugin manually).
 
-Now here's the tricky part.  The ``scala.sys.process`` package doesn't provide any
-mechanism for sending signals to processes.  As a result, I had to do something
-*very* hacky in order to shut down the ENSIME server on plugin unload.  This
-hack may currently be viewd on line 69 of ``BackendComponent.scala``.  Basically,
-it invokes a subprocess which spawns a shell and runs a little scriptlet that
-determines the ENSIME server PID using ``pgrep`` and sends the ``HUP`` signal to
-that process.  This is probably the most serious machine-specific part of the
-code, since (for PATH reasons) I had to hard-code the location of the ``pgrep``
-executable on my system.  If someone could come up with a more elegant way of
-killing the SBT process, I would be eternally grateful!
+Note that ENSIME has historically played a little sloppy with its sub-processes.
+There is currently a pull request open to fix this, but it won't rectify matters
+for older versions of ENSIME.  Fortunately, it's a pretty easy issue to fix in
+your local ENSIME setup.  Simply open the ``bin/server`` file in your ENSIME
+distribution and prefix the last line of the script with ``exec``.  This will
+cause ENSIME to load ``java`` in a single process, rather than spawning a parent
+shell process which loads ``java`` as a child.  If you fail to perform this step,
+jEdit will be unable to automatically kill the ENSIME process *at all* and you
+will need to manually cleanup orphaned server processes.  The easiest way to do
+this is to run ``ps aux | grep ensime`` and use ``kill`` on any results.
 
 
 Usage
@@ -65,10 +66,8 @@ Usage
 
 You *must* have a pre-existing ``.ensime`` file at the root of your project.  If
 you don't, the server init will probably do something very strange.  At the very
-least, it won't work.  The ENSIME server process will be spawned the moment you
-open a Scala file (assuming you have the "ensime" parser associated with the Scala
-mode in the SideKick plugin options).  For debugging purposes, it is useful to
-run ``tail -f /tmp/ensime*log`` and watch the server's output in real time.  This
+least, it won't work.  For debugging purposes, it is useful to run 
+``tail -f /tmp/ensime*log`` and watch the server's output in real time.  This
 isn't necessary though.
 
 To initialize your project, run the ``ensime`` command within jEdit.  This is most
@@ -97,11 +96,25 @@ running any of the actual ENSIME actions.  This is only required once (in fact,
 ENSIME actions *should* work just fine even in a dirty buffer once the type
 checking has been run).
 
+Oh, and Sidekick has some strange glitches with respect to typechecking files.
+The most reliable way I've found to keep it happy is to do two things.  First,
+dock the "Sidekick" view in your sidebar and ensure that you have opened it at
+least once in your current editing session.  You don't need to leave it open,
+just docked.  Then, after you start ENSIME, switch buffers once and then come
+back to the buffer you actually wanted to edit.  This will force Sidekick to
+trigger a type checking and everything should line up from that point.  Type
+checking happens by default on buffer switch and on save (this is something you
+configure in Sidekick).
+
 Popup completion is currently disabled, for which you should be very grateful.
 The implementation is in ``EnsimeParser.scala`` and ``EnsimeProtocolComponent.scala``
 if you're interested in improving it.  Please read ENSIME's ``SwankProtocol.scala``
 before you jump in, since it will help you understand why this is such a thorny
 feature, particularly in jEdit.
+
+Just in case the ENSIME server starts doing something weird, you can always
+restart it.  This is done by first invoking the ``ensime.kill`` command and then
+re-running ``ensime``.
 
 
 ENSIME Client
