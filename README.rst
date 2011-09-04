@@ -29,10 +29,27 @@ that I rely on for my day-to-day work.  Everything else is caveat emptor.
 Installing
 ==========
 
-Right now, installing the plugin requires building it from scratch.  Fortunately,
-the building part is really easy...provided your machine is set up *identically*
-to mine.  The build is based on SBT, but it currently hard-codes the locations
-of the following three JAR files:
+The easiest way to install the plugin is to download the pre-built tar file and
+extract it into your ``jEdit/jars`` directory.  Once you have done this, you should
+be able to load the plugin either by restarting jEdit or by manually scanning and
+loading in the Plugin Manager.  Note that this plugin requires both Sidekick and
+ErrorList.  It also packages ``scala-library.jar`` for Scala 2.9.1, so if you have
+any other plugins which use Scala, prepare to have their libraries stomped!
+
+Before you start using this plugin, be sure to read this *entire* README.  I haven't
+had a chance to organize this documentation in any sane way, and there are a lot
+of little tidbits and pitfalls to watch out for.
+
+The plugin will *not* work on Windows.  If you want to make this work, submit a
+pull request!  It is unlikely that I will implement this feature myself.
+
+
+Building
+--------
+
+Fortunately, building the plugin is really easy...provided your machine is set
+up *identically* to mine.  The build is based on SBT, but it currently hard-codes
+the locations of the following three JAR files:
 
 * ``jedit.jar``
 * ``SideKick.jar``
