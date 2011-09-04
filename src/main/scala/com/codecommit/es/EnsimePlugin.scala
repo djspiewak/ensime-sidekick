@@ -91,17 +91,15 @@ object EnsimePlugin {
               JOptionPane.showMessageDialog(view, "Project file is invalid.  Make sure it consists of a single s-expression.  (no comments!)", "Error", JOptionPane.ERROR_MESSAGE)
             }
             
-            for (projectData <- optProjectData) {
-              val home = projectData match {
-                case props: SExpList =>
-                  props.toKeywordMap get SExp.key(":ensime-home") collect { case StringAtom(str) => str } map { new File(_) } filter { _.exists } getOrElse EnsimeHome
-                
-                case _ => EnsimeHome
-              }
+            for (projectData @ SExpList(data) <- optProjectData) {
+              val parentDir = projectFile.getParentFile
+              val projectData2 = SExpList(SExp.key(":root-dir") :: StringAtom(parentDir.getCanonicalPath) :: data.toList)
+              
+              val home = projectData2.toKeywordMap get SExp.key(":ensime-home") collect { case StringAtom(str) => str } map { new File(_) } filter { _.exists } getOrElse EnsimeHome
               
               val inst = new Instance(home)
               inst.Backend.start(inst.handle(Handler))
-              inst.Ensime.initProject(projectData) { (projectName, sourceRoots) =>
+              inst.Ensime.initProject(projectData2) { (projectName, sourceRoots) =>
                 lock synchronized {
                   sourceRoots foreach { root => instances += (root -> inst) }
                 }
