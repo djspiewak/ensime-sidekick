@@ -2,6 +2,7 @@ plugin.com.codecommit.es.EnsimePlugin.activate=defer
 plugin.com.codecommit.es.EnsimePlugin.name=ENSIME
 plugin.com.codecommit.es.EnsimePlugin.author=Daniel Spiewak
 plugin.com.codecommit.es.EnsimePlugin.version=0.1
+plugin.com.codecommit.es.EnsimePlugin.jars=scala-library.jar
 
 plugin.com.codecommit.es.EnsimePlugin.option-group=ensime
 
