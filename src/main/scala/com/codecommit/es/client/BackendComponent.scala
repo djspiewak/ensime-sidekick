@@ -2,11 +2,10 @@ package com.codecommit
 package es
 package client
 
-import java.io.File
+import java.io.{File, FileOutputStream, InputStream, OutputStream}
 import java.net.Socket
 
 import scala.io.Source
-import scala.sys.process._
 
 trait BackendComponent {
   def Backend: Backend
@@ -36,6 +35,9 @@ trait EnsimeBackendComponent extends BackendComponent {
     var portFile: File = _      // ouch!
     var port: Int = -1
     
+    var stderrCopier: Thread = _
+    var stdoutCopier: Thread = _
+    
     var agent: AsyncSocketAgent = _
     
     def start(callback: String => Unit) {
@@ -44,9 +46,18 @@ trait EnsimeBackendComponent extends BackendComponent {
         val logFile = File.createTempFile("ensime", ".log", TempDir)
         val serverScript = new File(new File(EnsimeHome, "bin"), "server")
         
-        val builder = Process(serverScript.getAbsolutePath + " " + portFile.getCanonicalPath, EnsimeHome)
-        proc = (builder #> logFile).run()
+        val builder = new ProcessBuilder(serverScript.getAbsolutePath,  portFile.getCanonicalPath)
+        builder.directory(EnsimeHome)
+        proc = builder.start()
         
+        val fos = new FileOutputStream(logFile)
+        stderrCopier = ioCopier(proc.getErrorStream, fos)
+        stdoutCopier = ioCopier(proc.getInputStream, fos)
+        
+        stderrCopier.start()
+        stdoutCopier.start()
+        
+        // busy-wait until port is written
         while (port < 0) {
           val src = Source fromFile portFile
           src.getLines map { _.toInt } foreach { port = _ }
@@ -65,9 +76,26 @@ trait EnsimeBackendComponent extends BackendComponent {
       agent.stop()
       agent.socket.close()
       
-      // kill ensime server by any means necessary
-      Process("/bin/sh" :: "-c" :: "kill $(/opt/local/bin/pgrep -f '" + portFile.getCanonicalPath + "')" :: Nil).run()
+      stderrCopier.interrupt()
+      stdoutCopier.interrupt()
       proc.destroy()
+    }
+  }
+  
+  def ioCopier(is: InputStream, os: OutputStream): Thread = new Thread {
+    setDaemon(true)
+    setPriority(1)
+    
+    override def run() {
+      try {
+        var b = is.read()
+        while (b >= 0) {
+          os.write(b)
+          b = is.read()
+        }
+      } catch {
+        case _ => try { os.close() } catch { case _ => }
+      }
     }
   }
 }

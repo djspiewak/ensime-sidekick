@@ -208,5 +208,6 @@ class Instance(val RootDir: File, val EnsimeHome: File) extends EnsimeProtocolCo
   
   def stop() {
     ErrorSource.unregisterErrorSource(Handler.errorSource)
+    Backend.stop()
   }
 }
