@@ -86,7 +86,7 @@ object EnsimePlugin {
               
               val home = projectData2.toKeywordMap get SExp.key(":ensime-home") collect { case StringAtom(str) => str } map { new File(_) } filter { _.exists } getOrElse EnsimeHome
               
-              val inst = new Instance(home)
+              val inst = new Instance(parentDir, home)
               inst.start()
               inst.Ensime.initProject(projectData2) { (projectName, sourceRoots) =>
                 lock synchronized {
@@ -99,6 +99,18 @@ object EnsimePlugin {
           }
         }
       })
+    }
+  }
+  
+  def stopProject(view: View) {
+    for (inst <- instanceForBuffer(view.getBuffer)) {
+      lock synchronized {
+        for ((root, `inst`) <- instances) {
+          instances -= root
+        }
+      }
+      inst.stop()
+      view.getStatus.setMessage("ENSIME: Server instance killed")
     }
   }
   
@@ -186,7 +198,7 @@ object EnsimePlugin {
     base #:: (Option(base.getParent) map { new File(_) } map parentDirs getOrElse Stream.empty)
 }
 
-class Instance(val EnsimeHome: File) extends EnsimeProtocolComponent with EnsimeBackendComponent {
+class Instance(val RootDir: File, val EnsimeHome: File) extends EnsimeProtocolComponent with EnsimeBackendComponent {
   val Handler = new SidekickBackendHandler(new DefaultErrorSource("ENSIME"))
   
   def start() {

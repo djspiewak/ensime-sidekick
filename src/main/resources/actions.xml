@@ -6,6 +6,11 @@
             com.codecommit.es.EnsimePlugin.initProject(view);
         </CODE>
     </ACTION>
+    <ACTION NAME="ensime.kill">
+        <CODE>
+            com.codecommit.es.EnsimePlugin.stopProject(view);
+        </CODE>
+    </ACTION>
     <ACTION NAME="ensime.inspect-type">
         <CODE>
             com.codecommit.es.EnsimePlugin.determineType(view);
