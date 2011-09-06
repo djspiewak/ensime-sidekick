@@ -26,4 +26,9 @@
             com.codecommit.es.EnsimePlugin.expandSelection(view);
         </CODE>
     </ACTION>
+    <ACTION NAME="ensime.typecheck-file">
+        <CODE>
+            com.codecommit.es.EnsimePlugin.typecheckFile(view.getBuffer());
+        </CODE>
+    </ACTION>
 </ACTIONS>
