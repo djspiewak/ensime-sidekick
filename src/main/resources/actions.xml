@@ -21,4 +21,9 @@
             com.codecommit.es.EnsimePlugin.jumpToDeclaration(view);
         </CODE>
     </ACTION>
+    <ACTION NAME="ensime.expand-selection">
+        <CODE>
+            com.codecommit.es.EnsimePlugin.expandSelection(view);
+        </CODE>
+    </ACTION>
 </ACTIONS>

@@ -215,6 +215,23 @@ trait EnsimeProtocolComponent extends BackendComponent {
       dispatchSwank(id, SExp(key("swank:symbol-at-point"), file, offset))
     }
     
+    def expandSelection(file: String, start: Int, end: Int)(callback: (Int, Int) => Unit) {
+      val id = callId()
+      
+      registerReturn(id) {
+        case results: SExpList => {
+          val map = results.toKeywordMap
+          
+          val IntAtom(start) = map(key(":start"))
+          val IntAtom(end) = map(key(":end"))
+          
+          callback(start, end)
+        }
+      }
+      
+      dispatchSwank(id, SExp(key("swank:expand-selection"), file, start, end))
+    }
+    
     private def dispatchSwank(id: Int, sexp: SExp) {
       Backend.send(SExp(key(":swank-rpc"), sexp, id).toWireString)
     }
@@ -240,6 +257,7 @@ trait EnsimeProtocolComponent extends BackendComponent {
     def typeAtPoint(file: String, offset: Int)(callback: Type => Unit)
     def typecheckFile(file: String)
     def symbolAtPoint(file: String, offset: Int)(callback: Option[Location] => Unit)
+    def expandSelection(file: String, start: Int, end: Int)(callback: (Int, Int) => Unit)
   }
 }
 

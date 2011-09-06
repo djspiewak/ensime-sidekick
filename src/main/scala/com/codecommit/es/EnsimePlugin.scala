@@ -7,6 +7,7 @@ import org.gjt.sp.jedit
 import jedit.{jEdit => JEdit}
 import jedit.{Buffer, EBMessage, EBPlugin, View}
 import jedit.msg.ViewUpdate
+import jedit.textarea.Selection
 
 import java.awt.{EventQueue, Toolkit}
 import java.io.File
@@ -186,6 +187,47 @@ object EnsimePlugin {
         case None => {
           Toolkit.getDefaultToolkit.beep()
           view.getStatus.setMessage("ENSIME: Could not locate declaration!")
+        }
+      }
+    }
+  }
+  
+  def expandSelection(view: View) {
+    val buffer = view.getBuffer
+    
+    for (inst <- instanceForBuffer(buffer)) {
+      val filename = if (buffer.isDirty) {
+        buffer.autosave()
+        buffer.getAutosaveFile
+      } else {
+        new File(buffer.getPath)
+      }
+      
+      val area = view.getTextArea
+      
+      def parseSelection = {
+        if (area.getSelectionCount == 1) {
+          val select = area.getSelection.head
+          Some((select.getStart, select.getEnd))
+        } else if (area.getSelectionCount == 0) {
+          Some((area.getCaretPosition, area.getCaretPosition))
+        } else {
+          None
+        }
+      }
+      
+      val selection = parseSelection
+      
+      for ((start, end) <- selection) {
+        inst.Ensime.expandSelection(filename.getCanonicalPath, start, end) { (start2, end2) =>
+          if (parseSelection == selection) {
+            EventQueue.invokeLater(new Runnable {
+              def run() {
+                area.setCaretPosition(end2)
+                area.setSelection(new Selection.Range(start2, end2))
+              }
+            })
+          }
         }
       }
     }
