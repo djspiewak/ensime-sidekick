@@ -13,6 +13,7 @@ Features
 * Error reporting (type checking on save)
 * Inspect type (determine what type is inferred for a particular symbol)
 * Jump to declaration
+* AST-based selection (e.g. select scope)
 
 Er...that's about it right now.  :-)  I have a proof-of-concept for popup
 completion (intellisense), but it's going to take a fair amount of effort to make
