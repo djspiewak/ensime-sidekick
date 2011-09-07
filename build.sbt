@@ -15,32 +15,3 @@ unmanagedJars in Compile += {
 unmanagedJars in Compile += {
   Attributed.blank(new File("/Applications/jEdit.app/Contents/Resources/Java/jedit.jar"))
 }
-
-initialCommands := """
-    import com.codecommit.es._
-    import client._
-    import java.io.File
-    val Cake = new EnsimeProtocolComponent with EnsimeBackendComponent {
-      lazy val EnsimeHome = new File("/Users/daniel/Local/ensime_2.9.1-0.6.RC3")
-    }
-    trait DebugBackendHandler extends BackendHandler {
-      import EnsimeProtocol._
-      def backgroundMessage(msg: String) = println(msg)
-      def clearAll() {
-        println("Clear all...")
-      }
-	  def compilerReady() {
-	    println("Compiler ready!")
-	  }
-	  def fullTypecheckFinished() {
-	    println("Full typecheck finished")
-	  }
-	  def indexerReady() {
-	    println("Indexer ready!")
-	  }
-	  def error(note: Note) {
-	    printf("[error] %s:%d: %s\n", note.file, note.line, note.msg)
-	  }
-      def unhandled(sexp: util.SExp) = println(sexp.toReadableString)
-    }
-  """
