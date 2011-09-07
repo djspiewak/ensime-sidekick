@@ -10,15 +10,19 @@ options.ensime.label=ENSIME
 options.ensime.code=new com.codecommit.es.EnsimeOptionPane();
 
 plugin.com.codecommit.es.EnsimePlugin.menu=ensime \
+  ensime.kill \
   - \
   ensime.inspect-type \
   ensime.jump-to-declaration \
-  ensime.expand-selection
+  ensime.expand-selection \
+  ensime.suggest-imports
 options.menu.label=ENSIME
 ensime.label=Initialize Project
+ensime.kill.label=Kill Server for Project
 ensime.inspect-type.label=Inspect Type
 ensime.jump-to-declaration.label=Jump to Declaration
 ensime.expand-selection.label=Expand Selection
+ensime.suggest-imports.label=Suggest Imports
 
 plugin.com.codecommit.es.EnsimePlugin.depend.0=plugin sidekick.SideKickPlugin 1.2
 
