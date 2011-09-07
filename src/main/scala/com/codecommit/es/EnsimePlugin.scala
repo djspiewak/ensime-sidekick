@@ -5,7 +5,7 @@ import errorlist.{DefaultErrorSource, ErrorSource}
 
 import org.gjt.sp.jedit
 import jedit.{jEdit => JEdit}
-import jedit.{Buffer, EBMessage, EBPlugin, View}
+import jedit.{Buffer, EBMessage, EBPlugin, TextUtilities, View}
 import jedit.msg.ViewUpdate
 import jedit.textarea.Selection
 
@@ -229,6 +229,44 @@ object EnsimePlugin {
             })
           }
         }
+      }
+    }
+  }
+  
+  def suggestImports(view: View) {
+    val buffer = view.getBuffer
+    
+    for (inst <- instanceForBuffer(buffer)) {
+      val filename = if (buffer.isDirty) {
+        buffer.autosave()
+        buffer.getAutosaveFile
+      } else {
+        new File(buffer.getPath)
+      }
+      
+      val area = view.getTextArea
+      val point = area.getCaretPosition
+      
+      val caretLine = area.getCaretLine
+      val caretInLine = point - buffer.getLineStartOffset(caretLine)
+      val line = buffer.getLineText(caretLine)
+      
+      val start = TextUtilities.findWordStart(line, caretInLine, "")
+      val end = TextUtilities.findWordEnd(line, caretInLine, "")
+      
+      val word = line.substring(start, end)
+      
+      inst.Ensime.importSuggestions(filename.getCanonicalPath, point, List(word), 5) { suggestions =>
+        def insertImport(suggestion: String) {
+          System.err.println("Pretending to insert import: " + suggestion)
+        }
+        
+        val editorXY = area.getLocationOnScreen
+        val xy = area.offsetToXY(point)
+        xy.translate(editorXY.x, editorXY.y)
+        
+        val popup = new ui.ImportSuggestionsPopup(view, xy, Vector(suggestions: _*))(insertImport)
+        popup.show()
       }
     }
   }

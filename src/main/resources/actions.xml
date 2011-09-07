@@ -31,4 +31,9 @@
             com.codecommit.es.EnsimePlugin.typecheckFile(view.getBuffer());
         </CODE>
     </ACTION>
+    <ACTION NAME="ensime.suggest-imports">
+        <CODE>
+            com.codecommit.es.EnsimePlugin.suggestImports(view);
+        </CODE>
+    </ACTION>
 </ACTIONS>
