@@ -3,6 +3,7 @@ package es
 
 import errorlist.{DefaultErrorSource, ErrorSource}
 
+import javax.swing.JFrame
 import org.gjt.sp.jedit
 import jedit.{jEdit => JEdit}
 import jedit.{Buffer, EBMessage, EBPlugin, TextUtilities, View}
@@ -258,7 +259,20 @@ object EnsimePlugin {
       
       inst.Ensime.importSuggestions(filename.getCanonicalPath, point, List(word), 5) { suggestions =>
         def insertImport(suggestion: String) {
-          System.err.println("Pretending to insert import: " + suggestion)
+          val (insertionPoint, pad) = ImportFinder(suggestion) { i =>
+            Option(area getLineText i)
+          }
+          
+          val oldPos = area.getCaretPosition
+          val toInsert = "%simport %s\n".format(if (pad) "\n" else "", suggestion)
+          
+          EventQueue.invokeLater(new Runnable {
+            def run() {
+              area.setCaretPosition(area.getLineStartOffset(insertionPoint), false)
+              area.setSelectedText(toInsert)
+              area.setCaretPosition(oldPos + toInsert.length, true)
+            }
+          })
         }
         
         val editorXY = area.getLocationOnScreen
