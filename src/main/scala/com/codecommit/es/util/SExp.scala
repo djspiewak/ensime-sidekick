@@ -97,7 +97,7 @@ object SExp extends RegexParsers {
   lazy val string = regexGroups("""\"((?:[^\"\\]|\\.)*)\"""".r) ^^ { m => StringAtom(m.group(1).replace("\\\\", "\\")) }
   lazy val sym = regex("[a-zA-Z][a-zA-Z0-9-:]*".r) ^^ SymbolAtom
   lazy val keyword = regex(":[a-zA-Z][a-zA-Z0-9-:]*".r) ^^ KeywordAtom
-  lazy val number = regex("[0-9]+".r) ^^ { cs => IntAtom(cs.toInt) }
+  lazy val number = regex("-?[0-9]+".r) ^^ { cs => IntAtom(cs.toInt) }
   lazy val list = literal("(") ~> rep(expr) <~ literal(")") ^^ SExpList.apply
   lazy val nil = literal("nil") ^^ { cs => NilAtom() }
   lazy val truth = literal("t") ^^ { cs => TruthAtom() }
