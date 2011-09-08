@@ -7,7 +7,7 @@ plugin.com.codecommit.es.EnsimePlugin.jars=scala-library.jar
 plugin.com.codecommit.es.EnsimePlugin.option-group=ensime
 
 options.ensime.label=ENSIME
-options.ensime.code=new com.codecommit.es.EnsimeOptionPane();
+options.ensime.code=new com.codecommit.es.ui.EnsimeOptionPane();
 
 plugin.com.codecommit.es.EnsimePlugin.menu=ensime \
   ensime.kill \

@@ -1,5 +1,6 @@
 package com.codecommit
 package es
+package ui
 
 import org.gjt.sp.jedit
 import jedit.{jEdit => JEdit, AbstractOptionPane}
