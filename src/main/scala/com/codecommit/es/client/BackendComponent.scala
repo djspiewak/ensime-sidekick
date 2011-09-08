@@ -11,10 +11,11 @@ trait BackendComponent {
   def Backend: Backend
   
   trait Backend {
+    
     /**
      * Should be idempotent
      */
-    def start(callback: String => Unit)
+    def start(env: (String, String)*)(callback: String => Unit)
     def stop()
     
     def isStarted: Boolean
@@ -40,13 +41,18 @@ trait EnsimeBackendComponent extends BackendComponent {
     
     var agent: AsyncSocketAgent = _
     
-    def start(callback: String => Unit) {
+    def start(env: (String, String)*)(callback: String => Unit) {
       if (!isStarted) {
         portFile = File.createTempFile("ensime", ".port", TempDir)
         val logFile = File.createTempFile("ensime", ".log", TempDir)
         val serverScript = new File(new File(EnsimeHome, "bin"), "server")
         
         val builder = new ProcessBuilder(serverScript.getAbsolutePath,  portFile.getCanonicalPath)
+        
+        for ((k, v) <- env) {
+          builder.environment.put(k, v)
+        }
+        
         builder.directory(EnsimeHome)
         proc = builder.start()
         

@@ -38,8 +38,10 @@ object EnsimePlugin {
   private val lock = new AnyRef
   
   def EnsimeHome = new File(Option(JEdit.getProperty(EnsimeHomeProperty)) getOrElse "/Users/daniel/Local/ensime_2.9.1-0.6.RC3")
+  def SbtOpts = Option(JEdit.getProperty(SbtOptsProperty)) getOrElse ""
   
   val EnsimeHomeProperty = "ensime.home"
+  val SbtOptsProperty = "ensime.sbt-opts"
   
   def stopAll() {
     lock synchronized {
@@ -101,7 +103,7 @@ object EnsimePlugin {
                 view.getStatus.setMessage("ENSIME: Starting server...")
                 
                 val inst = new Instance(parentDir, home)
-                inst.start()
+                inst.start("SBT_OPTS" -> SbtOpts)
                 inst.Ensime.initProject(projectData2) { (projectName, sourceRoots) =>
                   if (sourceRoots.isEmpty) {
                     EventQueue.invokeLater(new Runnable {
@@ -317,9 +319,9 @@ object EnsimePlugin {
 class Instance(val RootDir: File, val EnsimeHome: File) extends EnsimeProtocolComponent with EnsimeBackendComponent {
   val Handler = new SidekickBackendHandler(new DefaultErrorSource("ENSIME"))
   
-  def start() {
+  def start(env: (String, String)*) {
     ErrorSource.registerErrorSource(Handler.errorSource)
-    Backend.start(handle(Handler))
+    Backend.start(env: _*)(handle(Handler))
   }
   
   def stop() {
