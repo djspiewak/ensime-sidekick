@@ -83,26 +83,38 @@ object EnsimePlugin {
             }
             
             for (projectData @ SExpList(data) <- optProjectData) {
-              val parentDir = projectFile.getParentFile
-              val projectData2 = SExpList(SExp.key(":root-dir") :: StringAtom(parentDir.getCanonicalPath) :: data.toList)
+              val optSubprojectItems = projectData.toKeywordMap.get(SExp.key(":sbt-subprojects")) collect { case SExpList(items) => Vector(items.toList: _*) }
+              val optSubprojects = optSubprojectItems map { _ collect { case xs: SExpList => xs.toKeywordMap } map { _(SExp.key(":name")) } collect { case StringAtom(str) => str } }
               
-              val home = projectData2.toKeywordMap get SExp.key(":ensime-home") collect { case StringAtom(str) => str } map { new File(_) } filter { _.exists } getOrElse EnsimeHome
+              val optActiveSubproject = optSubprojects flatMap { subprojects =>
+                val dialog = new ui.SubprojectSelectorDialog(view, subprojects)
+                dialog.open()
+              }
               
-              view.getStatus.setMessage("ENSIME: Starting server...")
-              
-              val inst = new Instance(parentDir, home)
-              inst.start()
-              inst.Ensime.initProject(projectData2) { (projectName, sourceRoots) =>
-                if (sourceRoots.isEmpty) {
-                  EventQueue.invokeLater(new Runnable {
-                    def run() {
-                      JOptionPane.showMessageDialog(view, "ENSIME failed to start!  Could not detect source roots.", "Error", JOptionPane.ERROR_MESSAGE)
+              if (!optSubprojects.isDefined || optActiveSubproject.isDefined) {
+                val parentDir = projectFile.getParentFile
+                val projectData2 = SExpList(
+                  SExp.key(":root-dir") :: StringAtom(parentDir.getCanonicalPath) ::
+                  (optActiveSubproject map { str => SExp.key(":sbt-active-subproject") :: StringAtom(str) :: data.toList } getOrElse data.toList))
+                
+                val home = projectData2.toKeywordMap get SExp.key(":ensime-home") collect { case StringAtom(str) => str } map { new File(_) } filter { _.exists } getOrElse EnsimeHome
+                
+                view.getStatus.setMessage("ENSIME: Starting server...")
+                
+                val inst = new Instance(parentDir, home)
+                inst.start()
+                inst.Ensime.initProject(projectData2) { (projectName, sourceRoots) =>
+                  if (sourceRoots.isEmpty) {
+                    EventQueue.invokeLater(new Runnable {
+                      def run() {
+                        JOptionPane.showMessageDialog(view, "ENSIME failed to start!  Could not detect source roots.", "Error", JOptionPane.ERROR_MESSAGE)
+                      }
+                    })
+                    inst.stop()
+                  } else {
+                    lock synchronized {
+                      sourceRoots foreach { root => instances += (root -> inst) }
                     }
-                  })
-                  inst.stop()
-                } else {
-                  lock synchronized {
-                    sourceRoots foreach { root => instances += (root -> inst) }
                   }
                 }
               }
