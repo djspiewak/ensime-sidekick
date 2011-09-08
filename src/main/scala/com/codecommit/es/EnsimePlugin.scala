@@ -3,7 +3,6 @@ package es
 
 import errorlist.{DefaultErrorSource, ErrorSource}
 
-import javax.swing.JFrame
 import org.gjt.sp.jedit
 import jedit.{jEdit => JEdit}
 import jedit.{Buffer, EBMessage, EBPlugin, TextUtilities, View}
