@@ -62,9 +62,7 @@ trait EnsimeProtocolComponent extends BackendComponent {
             val IntAtom(column) = noteMap(key(":col"))
             val StringAtom(file) = noteMap(key(":file"))
             
-            val note = Note(msg, begin, end, line, column, file)
-            
-            handler.error(note)
+            handler.error(Note(msg, begin, end, line, column, file))
           }
         }
         
