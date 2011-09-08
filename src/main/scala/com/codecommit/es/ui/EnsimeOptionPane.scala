@@ -13,12 +13,13 @@ import javax.swing._
 
 class EnsimeOptionPane extends AbstractOptionPane("ensime") {
   private var homeField = new JTextField(EnsimePlugin.EnsimeHome.getCanonicalPath)
+  private var sbtOptsField = new JTextField(EnsimePlugin.SbtOpts)
   
   override def _init() {
-    val panel = new JPanel(new BorderLayout)
-    addComponent("Default ENSIME Home", panel)
+    val homePanel = new JPanel(new BorderLayout)
+    addComponent("Default ENSIME Home", homePanel)
     
-    panel.add(homeField)
+    homePanel.add(homeField)
     
     val button = new JButton("...")
     button.addActionListener(new ActionListener {
@@ -28,10 +29,13 @@ class EnsimeOptionPane extends AbstractOptionPane("ensime") {
         dialog.getSelectedFiles.headOption foreach homeField.setText
       }
     })
-    panel.add(button, BorderLayout.EAST)
+    homePanel.add(button, BorderLayout.EAST)
+    
+    addComponent("SBT Options", sbtOptsField)
   }
   
   override def _save() {
     JEdit.setProperty(EnsimePlugin.EnsimeHomeProperty, homeField.getText)
+    JEdit.setProperty(EnsimePlugin.SbtOptsProperty, sbtOptsField.getText)
   }
 }
