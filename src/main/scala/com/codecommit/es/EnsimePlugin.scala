@@ -93,8 +93,17 @@ object EnsimePlugin {
               val inst = new Instance(parentDir, home)
               inst.start()
               inst.Ensime.initProject(projectData2) { (projectName, sourceRoots) =>
-                lock synchronized {
-                  sourceRoots foreach { root => instances += (root -> inst) }
+                if (sourceRoots.isEmpty) {
+                  EventQueue.invokeLater(new Runnable {
+                    def run() {
+                      JOptionPane.showMessageDialog(view, "ENSIME failed to start!  Could not detect source roots.", "Error", JOptionPane.ERROR_MESSAGE)
+                    }
+                  })
+                  inst.stop()
+                } else {
+                  lock synchronized {
+                    sourceRoots foreach { root => instances += (root -> inst) }
+                  }
                 }
               }
             }
