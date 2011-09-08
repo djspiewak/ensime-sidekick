@@ -88,6 +88,8 @@ object EnsimePlugin {
               
               val home = projectData2.toKeywordMap get SExp.key(":ensime-home") collect { case StringAtom(str) => str } map { new File(_) } filter { _.exists } getOrElse EnsimeHome
               
+              view.getStatus.setMessage("ENSIME: Starting server...")
+              
               val inst = new Instance(parentDir, home)
               inst.start()
               inst.Ensime.initProject(projectData2) { (projectName, sourceRoots) =>
