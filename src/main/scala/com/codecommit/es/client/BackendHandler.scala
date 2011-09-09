@@ -19,6 +19,7 @@ trait BackendHandler {
   def indexerReady()
   
   def error(note: Note)
+  def warning(note: Note)
   
   // hack
   def unhandled(msg: SExp)

@@ -37,6 +37,11 @@ class SidekickBackendHandler(val errorSource: DefaultErrorSource) extends Backen
     errorSource.addError(error(errorSource))
   }
   
+  def warning(note: Note) {
+    val error = new DefaultErrorSource.DefaultError(_: ErrorSource, ErrorSource.WARNING, note.file, note.line - 1, note.column - 1, note.column - 1 + (note.end - note.begin), note.msg)
+    errorSource.addError(error(errorSource))
+  }
+  
   def unhandled(msg: SExp) {
     System.err.println("Unhandled SExp: %s".format(msg.toReadableString))
   }
