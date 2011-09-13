@@ -29,6 +29,15 @@ trait EnsimeProtocolComponent extends BackendComponent {
           }
         }
         
+        case SExpList(KeywordAtom(":return") :: SExpList(KeywordAtom(":abort") :: IntAtom(code) :: StringAtom(detail) :: Nil) :: IntAtom(id) :: Nil) => {
+          handler.ensimeError(code, detail)
+          if (returns contains id) {
+            returnLock synchronized {
+              returns -= id
+            }
+          }
+        }
+        
         case SExpList(KeywordAtom(":background-message") :: _ :: StringAtom(msg) :: Nil) =>
           handler.backgroundMessage(msg)
         

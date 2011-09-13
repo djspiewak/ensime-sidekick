@@ -21,6 +21,6 @@ trait BackendHandler {
   def error(note: Note)
   def warning(note: Note)
   
-  // hack
+  def ensimeError(code: Int, detail: String)
   def unhandled(msg: SExp)
 }

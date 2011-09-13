@@ -6,6 +6,10 @@ import errorlist.{DefaultErrorSource, ErrorSource}
 import org.gjt.sp.jedit
 import jedit.{jEdit => JEdit, View}
 
+import java.awt.EventQueue
+
+import javax.swing.JOptionPane
+
 import client._
 import util._
 
@@ -40,6 +44,14 @@ class SidekickBackendHandler(val errorSource: DefaultErrorSource) extends Backen
   def warning(note: Note) {
     val error = new DefaultErrorSource.DefaultError(_: ErrorSource, ErrorSource.WARNING, note.file, note.line - 1, note.column - 1, note.column - 1 + (note.end - note.begin), note.msg)
     errorSource.addError(error(errorSource))
+  }
+  
+  def ensimeError(code: Int, detail: String) {
+    EventQueue.invokeLater(new Runnable {
+      def run() {
+        JOptionPane.showMessageDialog(null, "ENSIME Server Error: " + detail, "Error", JOptionPane.ERROR_MESSAGE)
+      }
+    })
   }
   
   def unhandled(msg: SExp) {
