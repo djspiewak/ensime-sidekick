@@ -202,9 +202,14 @@ object EnsimePlugin {
               val buffer = JEdit.openFile(view, loc.file)
               val pane = view.goToBuffer(buffer)
               val area = pane.getTextArea
-              area.setCaretPosition(loc.offset)
               
-              navPlugin foreach { _.getNavigator(view).addToHistory() }
+              EventQueue.invokeLater(new Runnable {
+                def run() {
+                  area.setCaretPosition(loc.offset)
+                  
+                  navPlugin foreach { _.getNavigator(view).addToHistory() }
+                }
+              })
             }
           })
         }
