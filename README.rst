@@ -10,11 +10,17 @@ certainly more amenable to one-off file editing.
 Features
 ========
 
-* Error reporting (type checking on save)
-* Inspect type (determine what type is inferred for a particular symbol)
-* Jump to declaration
-* AST-based selection (e.g. select scope)
-* Import suggestions
+* Navigation
+
+  * Jump to declaration
+  * Public symbol search (think: ctags or 'Open Type' in Eclipse)
+
+* Editing
+
+  * Error reporting (type checking on save)
+  * Inspect type (determine what type is inferred for a particular symbol)
+  * AST-based selection (e.g. select scope)
+  * Import suggestions
 
 Er...that's about it right now.  :-)  I have a proof-of-concept for popup
 completion (intellisense), but it's going to take a fair amount of effort to make
