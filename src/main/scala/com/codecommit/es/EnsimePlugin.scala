@@ -314,6 +314,37 @@ object EnsimePlugin {
     }
   }
   
+  def symbolSearch(view: View) {
+    val buffer = view.getBuffer
+    for (inst <- instanceForBuffer(buffer)) {
+      val dialog = new ui.SymbolSearchDialog(view, inst.Ensime.publicSymbolSearch)
+      
+      for ((file, offset) <- dialog.open() if offset >= 0) {
+        EventQueue.invokeLater(new Runnable {
+          def run() {
+            type Navigator = { def addToHistory() }
+            type NavigatorPlugin = { def getNavigator(view: View): Navigator }
+            
+            val navPlugin = Option(JEdit.getPlugin("ise.plugin.nav.NavigatorPlugin")) map { _.asInstanceOf[NavigatorPlugin] }
+            navPlugin foreach { _.getNavigator(view).addToHistory() }
+              
+            val buffer = JEdit.openFile(view, file)
+            val pane = view.goToBuffer(buffer)
+            val area = pane.getTextArea
+            
+            EventQueue.invokeLater(new Runnable {
+              def run() {
+                area.setCaretPosition(offset)
+                
+                navPlugin foreach { _.getNavigator(view).addToHistory() }
+              }
+            })
+          }
+        })
+      }
+    }
+  }
+  
   private def instanceForBuffer(buffer: Buffer) =
     parentDirs(new File(buffer.getPath)) flatMap instances.get headOption
   

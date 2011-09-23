@@ -36,4 +36,9 @@
             com.codecommit.es.EnsimePlugin.suggestImports(view);
         </CODE>
     </ACTION>
+    <ACTION NAME="ensime.symbol-search">
+        <CODE>
+            com.codecommit.es.EnsimePlugin.symbolSearch(view);
+        </CODE>
+    </ACTION>
 </ACTIONS>

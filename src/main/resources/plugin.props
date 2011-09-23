@@ -12,15 +12,18 @@ options.ensime.code=new com.codecommit.es.ui.EnsimeOptionPane();
 plugin.com.codecommit.es.EnsimePlugin.menu=ensime \
   ensime.kill \
   - \
-  ensime.inspect-type \
   ensime.jump-to-declaration \
+  ensime.symbol-search \
+  - \
+  ensime.inspect-type \
   ensime.expand-selection \
   ensime.suggest-imports
 options.menu.label=ENSIME
 ensime.label=Initialize Project
 ensime.kill.label=Kill Server for Project
-ensime.inspect-type.label=Inspect Type
 ensime.jump-to-declaration.label=Jump to Declaration
+ensime.symbol-search.label=Public Symbol Search
+ensime.inspect-type.label=Inspect Type
 ensime.expand-selection.label=Expand Selection
 ensime.suggest-imports.label=Suggest Imports
 

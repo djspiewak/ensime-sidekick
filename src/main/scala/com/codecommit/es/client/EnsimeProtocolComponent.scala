@@ -270,6 +270,36 @@ trait EnsimeProtocolComponent extends BackendComponent {
       dispatchSwank(id, SExp(key("swank:import-suggestions"), file, point, SExpList(names map StringAtom), maxResults))
     }
     
+    def publicSymbolSearch(names: List[String], maxResults: Int)(callback: List[(String, String, Int)] => Unit) {
+      val id = callId()
+      
+      registerReturn(id) {
+        case SExpList(results) => {
+          val back = results collect {
+            case result: SExpList => {
+              val map = result.toKeywordMap
+              
+              if (map.contains(key(":name")) && map.contains(key(":pos"))) {
+                val StringAtom(name) = map(key(":name"))
+                
+                val pos = map(key(":pos")).asInstanceOf[SExpList].toKeywordMap
+                val StringAtom(file) = pos(key(":file"))
+                val IntAtom(offset) = pos(key(":offset"))
+                
+                Some((name, file, offset))
+              } else {
+                None
+              }
+            }
+          }
+          
+          callback(back.flatten.toList)
+        }
+      }
+      
+      dispatchSwank(id, SExp(key("swank:public-symbol-search"), SExpList(names map StringAtom), maxResults))
+    }
+    
     private def dispatchSwank(id: Int, sexp: SExp) {
       Backend.send(SExp(key(":swank-rpc"), sexp, id).toWireString)
     }
@@ -297,6 +327,7 @@ trait EnsimeProtocolComponent extends BackendComponent {
     def symbolAtPoint(file: String, offset: Int)(callback: Option[Location] => Unit)
     def expandSelection(file: String, start: Int, end: Int)(callback: (Int, Int) => Unit)
     def importSuggestions(file: String, point: Int, names: List[String], maxResults: Int)(callback: List[String] => Unit)
+    def publicSymbolSearch(names: List[String], maxResults: Int)(callback: List[(String, String, Int)] => Unit)
   }
 }
 

@@ -31,7 +31,7 @@ class EnsimeParser extends SideKickParser("ensime") {
     }
     
     signal synchronized {
-      signal.wait(5000)
+      signal.wait(500)
     }
     
     if (finalResults != null) {
