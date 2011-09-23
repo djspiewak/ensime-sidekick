@@ -82,7 +82,7 @@ trait EnsimeProtocolComponent extends BackendComponent {
         case other => handler.unhandled(other)
       }
     } catch {
-      case e => e.printStackTrace
+      case e: Throwable => e.printStackTrace
     }
   }
   

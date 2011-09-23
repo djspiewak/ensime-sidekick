@@ -73,7 +73,7 @@ class SymbolSearchDialog(parent: JFrame, publicSymbolSearch: (List[String], Int)
           hasOutstanding = true
           queryNames = None
           
-          publicSymbolSearch(tokens, 50) { results =>
+          publicSymbolSearch(tokens, 20) { results =>
             val names2 = results map { case (n, _, _) => n }
             val data2 = results map { case (_, f, o) => (f, o) }
             
