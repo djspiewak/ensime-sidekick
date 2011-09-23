@@ -7,13 +7,20 @@ import java.net.Socket
 
 import java.util.concurrent.{LinkedBlockingQueue, TimeUnit}
 
-private[es] class AsyncSocketAgent(val socket: Socket)(callback: String => Unit) { self =>
+private[es] class AsyncSocketAgent(val socket: Socket, callback: String => Unit, failure: String => Unit) { self =>
   private val queue = new LinkedBlockingQueue[String]
   
   private val writerThread = {
     val back = new Thread {
       override def run() {
-        self.runWriter()
+        try {
+          self.runWriter()
+        } catch {
+          case e => {
+            failure("%s: %s".format(e.getClass.getSimpleName, e.toString))
+            throw e
+          }
+        }
       }
     }
     back.setPriority(3)
@@ -24,7 +31,14 @@ private[es] class AsyncSocketAgent(val socket: Socket)(callback: String => Unit)
   private val readerThread = {
     val back = new Thread {
       override def run() {
-        self.runReader()
+        try {
+          self.runReader()
+        } catch {
+          case e => {
+            failure("%s: %s".format(e.getClass.getSimpleName, e.toString))
+            throw e
+          }
+        }
       }
     }
     back.setPriority(3)

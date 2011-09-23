@@ -10,6 +10,8 @@ import scala.io.Source
 trait BackendComponent {
   def Backend: Backend
   
+  def fatalServerError(msg: String)
+  
   trait Backend {
     
     /**
@@ -69,7 +71,7 @@ trait EnsimeBackendComponent extends BackendComponent {
           src.getLines map { _.toInt } foreach { port = _ }
         }
         
-        agent = new AsyncSocketAgent(new Socket("localhost", port))(callback)
+        agent = new AsyncSocketAgent(new Socket("localhost", port), callback, fatalServerError)
         isStarted = true
       }
     }

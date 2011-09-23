@@ -102,7 +102,24 @@ object EnsimePlugin {
                 
                 view.getStatus.setMessage("ENSIME: Starting server...")
                 
-                val inst = new Instance(parentDir, home)
+                val inst = new Instance(parentDir, home) { self =>
+                  def fatalServerError(msg: String) {
+                    EventQueue.invokeLater(new Runnable {
+                      def run() {
+                        JOptionPane.showMessageDialog(view, "ENSIME: Fatal Error!  " + msg, "Error", JOptionPane.ERROR_MESSAGE)
+                      }
+                    })
+                    
+                    lock synchronized {
+                      for ((root, `self`) <- instances) {
+                        instances -= root
+                      }
+                    }
+                    
+                    self.stop()
+                  }
+                }
+                
                 inst.start("SBT_OPTS" -> SbtOpts)
                 inst.Ensime.initProject(projectData2) { (projectName, sourceRoots) =>
                   if (sourceRoots.isEmpty) {
@@ -352,7 +369,7 @@ object EnsimePlugin {
     base #:: (Option(base.getParent) map { new File(_) } map parentDirs getOrElse Stream.empty)
 }
 
-class Instance(val RootDir: File, val EnsimeHome: File) extends EnsimeProtocolComponent with EnsimeBackendComponent {
+abstract class Instance(val RootDir: File, val EnsimeHome: File) extends EnsimeProtocolComponent with EnsimeBackendComponent {
   val Handler = new SidekickBackendHandler(new DefaultErrorSource("ENSIME"))
   
   def start(env: (String, String)*) {
