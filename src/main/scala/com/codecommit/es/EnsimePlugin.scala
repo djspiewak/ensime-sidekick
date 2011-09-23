@@ -363,6 +363,20 @@ object EnsimePlugin {
     }
   }
   
+  def organizeImports(view: View) {
+    val buffer = view.getBuffer
+    
+    for (inst <- instanceForBuffer(buffer)) {
+      if (buffer.isDirty) {
+        buffer.save(view, null)
+      }
+      
+      inst.Ensime.organizeImports(buffer.getPath) { () =>
+        buffer.load(view, true)
+      }
+    }
+  }
+  
   private def instanceForBuffer(buffer: Buffer) =
     parentDirs(new File(buffer.getPath)) flatMap instances.get headOption
   

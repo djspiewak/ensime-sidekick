@@ -41,4 +41,9 @@
             com.codecommit.es.EnsimePlugin.symbolSearch(view);
         </CODE>
     </ACTION>
+    <ACTION NAME="ensime.organize-imports">
+        <CODE>
+            com.codecommit.es.EnsimePlugin.organizeImports(view);
+        </CODE>
+    </ACTION>
 </ACTIONS>

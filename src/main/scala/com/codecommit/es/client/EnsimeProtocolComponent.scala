@@ -90,6 +90,7 @@ trait EnsimeProtocolComponent extends BackendComponent {
     import SExp._
     
     private var _callId = 0
+    private var _procId = 0
     private val lock = new AnyRef
     
     def connectionInfo(callback: ConnectionInfo => Unit) {
@@ -299,6 +300,10 @@ trait EnsimeProtocolComponent extends BackendComponent {
       dispatchSwank(id, SExp(key("swank:public-symbol-search"), SExpList(names map StringAtom), maxResults))
     }
     
+    def organizeImports(file: String)(callback: () => Unit) {
+      dispatchSwank(callId(), SExp(key("swank:perform-refactor"), procId(), 'organizeImports, SExp('file, file), false))
+    }
+    
     private def dispatchSwank(id: Int, sexp: SExp) {
       Backend.send(SExp(key(":swank-rpc"), sexp, id).toWireString)
     }
@@ -306,6 +311,11 @@ trait EnsimeProtocolComponent extends BackendComponent {
     private def callId() = lock synchronized {
       _callId += 1
       _callId
+    }
+    
+    private def procId() = lock synchronized {
+      _procId += 1
+      _procId
     }
   }
   
@@ -327,6 +337,8 @@ trait EnsimeProtocolComponent extends BackendComponent {
     def expandSelection(file: String, start: Int, end: Int)(callback: (Int, Int) => Unit)
     def importSuggestions(file: String, point: Int, names: List[String], maxResults: Int)(callback: List[String] => Unit)
     def publicSymbolSearch(names: List[String], maxResults: Int)(callback: List[(String, String, Int)] => Unit)
+    
+    def organizeImports(file: String)(callback: () => Unit)
   }
 }
 
