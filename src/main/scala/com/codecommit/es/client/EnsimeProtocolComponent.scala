@@ -19,9 +19,8 @@ trait EnsimeProtocolComponent extends BackendComponent {
    * Meant to be partially-applied
    */
   def handle(handler: BackendHandler)(chunk: String) {
-    val sexp = SExp.read(new CharSequenceReader(chunk))
     try {
-      sexp match {
+      SExp.read(new CharSequenceReader(chunk)) match {
         case SExpList(KeywordAtom(":return") :: SExpList(KeywordAtom(":ok") :: inner :: Nil) :: IntAtom(id) :: Nil) => {
           returns get id foreach { _(inner) }
           returnLock synchronized {
