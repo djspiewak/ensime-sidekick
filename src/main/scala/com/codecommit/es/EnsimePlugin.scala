@@ -1,23 +1,16 @@
 package com.codecommit
 package es
 
+import client._
 import errorlist.{DefaultErrorSource, ErrorSource}
-
-import org.gjt.sp.jedit
-import jedit.{jEdit => JEdit}
-import jedit.{Buffer, EBMessage, EBPlugin, TextUtilities, View}
-import jedit.msg.ViewUpdate
-import jedit.textarea.Selection
-
 import java.awt.{EventQueue, Toolkit}
 import java.io.File
-
 import javax.swing.JOptionPane
-
+import org.gjt.sp.jedit
+import org.gjt.sp.jedit.{Buffer, EBMessage, EBPlugin, TextUtilities, View, jEdit => JEdit}
+import org.gjt.sp.jedit.textarea.Selection
 import scala.io.Source
 import scala.util.parsing.input.CharSequenceReader
-
-import client._
 import util._
 
 class EnsimePlugin extends EBPlugin {
@@ -372,7 +365,15 @@ object EnsimePlugin {
       }
       
       inst.Ensime.organizeImports(buffer.getPath) { () =>
-        buffer.load(view, true)
+        System.err.println("did the callback!")
+        EventQueue.invokeLater(new Runnable {
+          def run() {
+            buffer.load(view, true)
+            typecheckFile(buffer)
+            
+            JOptionPane.showMessageDialog(view, "Organize Imports refactoring completed successfully!", "Refactoring", JOptionPane.INFORMATION_MESSAGE)
+          }
+        })
       }
     }
   }

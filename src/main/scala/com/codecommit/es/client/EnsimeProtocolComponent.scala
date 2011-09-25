@@ -301,7 +301,22 @@ trait EnsimeProtocolComponent extends BackendComponent {
     }
     
     def organizeImports(file: String)(callback: () => Unit) {
-      dispatchSwank(callId(), SExp(key("swank:perform-refactor"), procId(), 'organizeImports, SExp('file, file), false))
+      val id = callId()
+      
+      registerReturn(id) {
+        case props: SExpList => {
+          val map = props.toKeywordMap
+          
+          val IntAtom(procId) = map(key(":procedure-id"))
+          
+          val SExpList(fileSE) = map(key(":touched-files"))
+          val files = fileSE collect { case StringAtom(file) => file }
+          
+          callback()
+        }
+      }
+      
+      dispatchSwank(id, SExp(key("swank:perform-refactor"), procId(), 'organizeImports, SExp('file, file), false))
     }
     
     private def dispatchSwank(id: Int, sexp: SExp) {
