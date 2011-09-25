@@ -301,22 +301,34 @@ trait EnsimeProtocolComponent extends BackendComponent {
     }
     
     def organizeImports(file: String)(callback: () => Unit) {
-      val id = callId()
+      def failure(reason: String) {}
       
-      registerReturn(id) {
+      def success(files: List[String]) {
+        callback()
+      }
+      
+      performRefactor('organizeImports, 'file -> file)(failure, success)
+    }
+    
+    private def performRefactor(id: Symbol, params: (Symbol, SExp)*)(failure: String => Unit, success: List[String] => Unit) {
+      val cid = callId()
+      val paramsSE = SExpList(params map { case (Symbol(k), v) => List(key(k), v) } flatten)
+      
+      registerReturn(cid) {
         case props: SExpList => {
           val map = props.toKeywordMap
           
-          val IntAtom(procId) = map(key(":procedure-id"))
-          
-          val SExpList(fileSE) = map(key(":touched-files"))
-          val files = fileSE collect { case StringAtom(file) => file }
-          
-          callback()
+          if (map get key(":status") map ("failure" ==) getOrElse false) {
+            val StringAtom(reason) = map(key(":reason"))
+            failure(reason)
+          } else {
+            val SExpList(fileSE) = map(key(":touched-files"))
+            success(fileSE collect { case StringAtom(file) => file } toList)
+          }
         }
       }
       
-      dispatchSwank(id, SExp(key("swank:perform-refactor"), procId(), 'organizeImports, SExp('file, file), false))
+      dispatchSwank(cid, SExp(key("swank:perform-refactor"), procId(), 'organizeImports, paramsSE, false))
     }
     
     private def dispatchSwank(id: Int, sexp: SExp) {
