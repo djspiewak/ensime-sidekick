@@ -2,7 +2,9 @@ An ENSIME_ SideKick plugin for jEdit.  Note that this plugin operates very much
 like the equivalent Emacs mode: it starts the ENSIME server as a sub-process and
 initializes individual projects based on explicit user interaction.  This was
 done very intentionally, since the Emacs mode of interaction is more flexible and
-certainly more amenable to one-off file editing.
+certainly more amenable to one-off file editing.  Note that the plugin does *not*
+require the Project Viewer plugin!  The only requirements are SideKick and Error
+List (which is a dependency of SideKick).
 
 .. _ENSIME: http://aemon.com/file_dump/ensime_manual.html
 
@@ -21,6 +23,10 @@ Features
   * Inspect type (determine what type is inferred for a particular symbol)
   * AST-based selection (e.g. select scope)
   * Import suggestions
+  
+* Refactoring
+
+  * Organize Imports
 
 Er...that's about it right now.  :-)  I have a proof-of-concept for popup
 completion (intellisense), but it's going to take a fair amount of effort to make
