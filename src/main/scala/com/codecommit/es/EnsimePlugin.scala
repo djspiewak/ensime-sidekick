@@ -365,7 +365,6 @@ object EnsimePlugin {
       }
       
       inst.Ensime.organizeImports(buffer.getPath) { () =>
-        System.err.println("did the callback!")
         EventQueue.invokeLater(new Runnable {
           def run() {
             buffer.load(view, true)
