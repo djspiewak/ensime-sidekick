@@ -78,7 +78,7 @@ object EnsimePlugin {
       val src = Source fromFile projectFile
       val optProjectData = Option(SExp.read(new CharSequenceReader(src.mkString)))
       
-      if (!optProjectData.isDefined) {
+      if (!optProjectData.isDefined || optProjectData == Some(NilAtom())) {
         JOptionPane.showMessageDialog(view, "Project file is invalid.  Make sure it consists of a single s-expression.  (no comments!)", "Error", JOptionPane.ERROR_MESSAGE)
       }
       
