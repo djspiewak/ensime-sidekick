@@ -69,6 +69,7 @@ trait EnsimeBackendComponent extends BackendComponent {
         while (port < 0) {
           val src = Source fromFile portFile
           src.getLines map { _.toInt } foreach { port = _ }
+          src.close()
         }
         
         agent = new AsyncSocketAgent(new Socket("localhost", port), callback, fatalServerError)
