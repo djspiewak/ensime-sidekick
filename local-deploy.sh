@@ -8,5 +8,5 @@ if [ ! -d $JEDIT_HOME ]; then
 	exit -1
 fi
 
-cp target/scala-2.9.1.final/ensimesidekick_2.9.1-0.1.jar $JEDIT_HOME/jars/EnsimeSidekick.jar
+cp target/scala-2.9.1/ensimesidekick_2.9.1-0.1.jar $JEDIT_HOME/jars/EnsimeSidekick.jar
 cp $SCALA_HOME/lib/scala-library.jar $JEDIT_HOME/jars

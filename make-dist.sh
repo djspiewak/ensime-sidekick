@@ -3,7 +3,7 @@
 CWD=`pwd`
 
 mkdir /tmp/ensime-sidekick
-cp target/scala-2.9.1.final/ensimesidekick_2.9.1-0.1.jar /tmp/ensime-sidekick/EnsimeSidekick.jar
+cp target/scala-2.9.1/ensimesidekick_2.9.1-0.1.jar /tmp/ensime-sidekick/EnsimeSidekick.jar
 cp $SCALA_HOME/lib/scala-library.jar /tmp/ensime-sidekick
 
 cd /tmp/ensime-sidekick
