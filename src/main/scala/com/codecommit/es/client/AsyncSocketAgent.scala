@@ -97,3 +97,25 @@ private[es] class AsyncSocketAgent(val socket: Socket, callback: String => Unit,
     Integer.valueOf(new String(header), 16)
   }
 }
+
+private[es] object AsyncSocketAgent {
+  def sync[A](timeout: Long)(f: (A => Unit) => Unit): Option[A] = {
+    var result: Option[A] = None
+    val signal = new AnyRef
+    
+    f { asyncRes =>
+      signal synchronized {
+        result = Some(asyncRes)
+        signal.notifyAll()
+      }
+    }
+    
+    signal synchronized {
+      if (result.isEmpty) {
+        signal.wait(timeout)
+      }
+    }
+    
+    result
+  }
+}

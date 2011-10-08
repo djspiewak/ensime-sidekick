@@ -2,49 +2,36 @@ package com.codecommit
 package es
 
 import errorlist.DefaultErrorSource
-import sidekick.{SideKickParser, SideKickCompletion, SideKickParsedData}
-
-import org.gjt.sp.jedit
-import jedit.{Buffer, EditPane}
-
-import java.io.File
-
 import es.client._
+import org.gjt.sp.jedit
+import org.gjt.sp.jedit.{Buffer, EditPane}
+import sidekick.{SideKickCompletion, SideKickParsedData, SideKickParser}
 
 class EnsimeParser extends SideKickParser("ensime") {
   import EnsimeProtocol._
+  import AsyncSocketAgent._
   
   override val canCompleteAnywhere = false
   
   override val supportsCompletion = true
   
   override def complete(editPane: EditPane, caret: Int): SideKickCompletion = {
+    System.err.println("Attempting to complete...")
+    
     val buffer = editPane.getBuffer
+    val optResults = sync(500)(EnsimePlugin.autoComplete(buffer, caret, ""))
     
-    var finalResults: List[CompletionResult] = null
-    val signal = new AnyRef
-    EnsimePlugin.autoComplete(buffer, caret, "") { results =>
-      finalResults = results
-      signal synchronized {
-        signal.notifyAll()
-      }
-    }
-    
-    signal synchronized {
-      signal.wait(500)
-    }
-    
-    if (finalResults != null) {
-      val possibles = finalResults map { _.name: Object } toArray
+    optResults map { results =>
+      System.err.println("Got results: " + results)
+      
+      val possibles = results map { _.name: Object } toArray
       
       new SideKickCompletion(editPane.getView, "", possibles) {}
-    } else {
-      null
-    }
+    } getOrElse null
   }
   
-  def parse(buffer: Buffer, errorSource: DefaultErrorSource): SideKickParsedData = {
+  override def parse(buffer: Buffer, errorSource: DefaultErrorSource): SideKickParsedData = {
     EnsimePlugin.typecheckFile(buffer)
-    null
+    new SideKickParsedData(buffer.getPath)
   }
 }
