@@ -2,10 +2,10 @@ package com.codecommit
 package es
 package client
 
-import java.io.{BufferedWriter, InputStreamReader, Reader, OutputStreamWriter}
+import java.io.{BufferedWriter, InputStreamReader, OutputStreamWriter, Reader}
 import java.net.Socket
-
 import java.util.concurrent.{LinkedBlockingQueue, TimeUnit}
+import scala.collection.mutable.ArrayBuffer
 
 private[es] class AsyncSocketAgent(val socket: Socket, callback: String => Unit, failure: String => Unit) { self =>
   private val queue = new LinkedBlockingQueue[String]
@@ -77,9 +77,16 @@ private[es] class AsyncSocketAgent(val socket: Socket, callback: String => Unit,
     
     try {
       while (!stopRequested) {
-        val buffer = new Array[Char](readHeader(reader))
-        reader.read(buffer)
-        callback(new String(buffer))
+        val totalBuffer = new ArrayBuffer[Char]
+        var remaining = readHeader(reader)
+        
+        while (remaining != 0) {
+          val buffer = new Array[Char](remaining)
+          remaining -= reader.read(buffer)
+          totalBuffer ++= buffer
+        }
+        
+        callback(new String(totalBuffer.toArray))
       }
     } catch { case _ if stopRequested => }
   }
