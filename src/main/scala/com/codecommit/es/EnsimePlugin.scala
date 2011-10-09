@@ -48,8 +48,8 @@ object EnsimePlugin {
   
   def initProject(view: View) {
     // TODO compensate for slow (network) file systems
-    val canonicalPath = new File(view.getBuffer.getPath).getCanonicalPath
-    val parents = parentDirs(new File(canonicalPath))
+    val absolutePath = new File(view.getBuffer.getPath).getAbsolutePath
+    val parents = parentDirs(new File(absolutePath))
     
     if (parents exists instances.contains) {
       view.getStatus.setMessage("ENSIME: Already initialized!")
@@ -61,7 +61,7 @@ object EnsimePlugin {
           files filter (null !=) map { _.getName } contains ".ensime"
         else
           false
-      } map { f => new File(f, ".ensime") } map { _.getCanonicalPath } getOrElse canonicalPath
+      } map { f => new File(f, ".ensime") } map { _.getAbsolutePath } getOrElse absolutePath
       
       EventQueue.invokeLater(new Runnable {
         def run() {
@@ -94,7 +94,7 @@ object EnsimePlugin {
         if (!optSubprojects.isDefined || optActiveSubproject.isDefined) {
           val parentDir = projectFile.getParentFile
           val projectData2 = SExpList(
-            SExp.key(":root-dir") :: StringAtom(parentDir.getCanonicalPath) ::
+            SExp.key(":root-dir") :: StringAtom(parentDir.getAbsolutePath) ::
             (optActiveSubproject map { str => SExp.key(":sbt-active-subproject") :: StringAtom(str) :: data.toList } getOrElse data.toList))
           
           val home = projectData2.toKeywordMap get SExp.key(":ensime-home") collect { case StringAtom(str) => str } map { new File(_) } filter { _.exists } getOrElse EnsimeHome
@@ -160,7 +160,7 @@ object EnsimePlugin {
         new File(buffer.getPath)
       }
       
-      inst.Ensime.typeCompletion(file.getCanonicalPath, caret, prefix)(callback)
+      inst.Ensime.typeCompletion(file.getAbsolutePath, caret, prefix)(callback)
     }
   }
   
@@ -175,7 +175,7 @@ object EnsimePlugin {
         new File(buffer.getPath)
       }
       
-      inst.Ensime.typeAtPoint(filename.getCanonicalPath, view.getTextArea.getCaretPosition) { t =>
+      inst.Ensime.typeAtPoint(filename.getAbsolutePath, view.getTextArea.getCaretPosition) { t =>
         view.getStatus.setMessage(t.friendlyName)
       }
     }
@@ -184,7 +184,7 @@ object EnsimePlugin {
   def typecheckFile(buffer: Buffer) {
     for (inst <- instanceForBuffer(buffer)) {
       if (!buffer.isDirty) {
-        inst.Ensime.typecheckFile(new File(buffer.getPath).getCanonicalPath)
+        inst.Ensime.typecheckFile(new File(buffer.getPath).getAbsolutePath)
       }
     }
   }
@@ -200,7 +200,7 @@ object EnsimePlugin {
         new File(buffer.getPath)
       }
       
-      inst.Ensime.symbolAtPoint(filename.getCanonicalPath, view.getTextArea.getCaretPosition) {
+      inst.Ensime.symbolAtPoint(filename.getAbsolutePath, view.getTextArea.getCaretPosition) {
         case Some(loc) => {
           EventQueue.invokeLater(new Runnable {
             def run() {
@@ -260,7 +260,7 @@ object EnsimePlugin {
       val selection = parseSelection
       
       for ((start, end) <- selection) {
-        inst.Ensime.expandSelection(filename.getCanonicalPath, start, end) { (start2, end2) =>
+        inst.Ensime.expandSelection(filename.getAbsolutePath, start, end) { (start2, end2) =>
           if (parseSelection == selection) {
             EventQueue.invokeLater(new Runnable {
               def run() {
@@ -297,7 +297,7 @@ object EnsimePlugin {
       
       val word = line.substring(start, end)
       
-      inst.Ensime.importSuggestions(filename.getCanonicalPath, point, List(word), 5) { suggestions =>
+      inst.Ensime.importSuggestions(filename.getAbsolutePath, point, List(word), 5) { suggestions =>
         def insertImport(suggestion: String) {
           val (insertionPoint, pad) = ImportFinder(suggestion) { i =>
             Option(area getLineText i)
