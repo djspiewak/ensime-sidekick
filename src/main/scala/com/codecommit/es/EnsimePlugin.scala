@@ -233,7 +233,7 @@ object EnsimePlugin {
     }
   }
   
-  def expandSelection(view: View) {
+  def expandSelection(view: View)(k: =>Unit) {
     val buffer = view.getBuffer
     
     for (inst <- instanceForBuffer(buffer)) {
@@ -266,6 +266,7 @@ object EnsimePlugin {
               def run() {
                 area.setCaretPosition(end2)
                 area.setSelection(new Selection.Range(start2, end2))
+                k
               }
             })
           }
@@ -371,6 +372,47 @@ object EnsimePlugin {
             typecheckFile(buffer)
             
             JOptionPane.showMessageDialog(view, "Organize Imports refactoring completed successfully!", "Refactoring", JOptionPane.INFORMATION_MESSAGE)
+          }
+        })
+      }
+    }
+  }
+  
+  def rename(view: View) {
+    val buffer = view.getBuffer
+    
+    for (inst <- instanceForBuffer(buffer)) {
+      if (buffer.isDirty) {
+        buffer.save(view, null)
+      }
+      
+      val selections = view.getTextArea.getSelection
+      if (selections.length == 0) {
+        expandSelection(view) {
+          rename(view)      // try, try again!
+        }
+      } else if (selections.length == 1) {
+        val selection = selections.head
+        val oldName = view.getTextArea.getSelectedText
+        
+        EventQueue.invokeLater(new Runnable {
+          def run() {
+            for (newName <- Option(JOptionPane.showInputDialog(view, "Rename:", oldName))) {
+              inst.Ensime.rename(buffer.getPath, selection.getStart, selection.getEnd - selection.getStart, newName) { files =>
+                val fileSet = Set(files: _*)
+                
+                EventQueue.invokeLater(new Runnable {
+                  def run() {
+                    for (buffer <- JEdit.getBuffers if fileSet contains buffer.getPath) {
+                      buffer.load(view, true)
+                      typecheckFile(buffer)
+                    }
+                    
+                    JOptionPane.showMessageDialog(view, "Rename refactoring completed successfully!", "Refactoring", JOptionPane.INFORMATION_MESSAGE)
+                  }
+                })
+              }
+            }
           }
         })
       }

@@ -310,6 +310,12 @@ trait EnsimeProtocolComponent extends BackendComponent {
       performRefactor('organizeImports, 'file -> file)(failure, success)
     }
     
+    def rename(file: String, offset: Int, length: Int, newName: String)(callback: List[String] => Unit) {
+      def failure(reason: String) {}
+      
+      performRefactor('rename, 'file -> file, 'start -> offset, 'end -> (offset + length), 'newName -> newName)(failure, callback)
+    }
+    
     private def performRefactor(id: Symbol, params: (Symbol, SExp)*)(failure: String => Unit, success: List[String] => Unit) {
       val cid = callId()
       val paramsSE = SExpList(params map { case (Symbol(k), v) => List(key(k), v) } flatten)
@@ -366,6 +372,7 @@ trait EnsimeProtocolComponent extends BackendComponent {
     def publicSymbolSearch(names: List[String], maxResults: Int)(callback: List[(String, String, Int)] => Unit)
     
     def organizeImports(file: String)(callback: () => Unit)
+    def rename(file: String, offset: Int, length: Int, newName: String)(callback: List[String] => Unit)
   }
 }
 

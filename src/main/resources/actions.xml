@@ -23,7 +23,7 @@
     </ACTION>
     <ACTION NAME="ensime.expand-selection">
         <CODE>
-            com.codecommit.es.EnsimePlugin.expandSelection(view);
+            com.codecommit.es.EnsimePlugin.expandSelection(view, null);
         </CODE>
     </ACTION>
     <ACTION NAME="ensime.typecheck-file">
@@ -44,6 +44,11 @@
     <ACTION NAME="ensime.organize-imports">
         <CODE>
             com.codecommit.es.EnsimePlugin.organizeImports(view);
+        </CODE>
+    </ACTION>
+    <ACTION NAME="ensime.rename">
+        <CODE>
+            com.codecommit.es.EnsimePlugin.rename(view);
         </CODE>
     </ACTION>
 </ACTIONS>
