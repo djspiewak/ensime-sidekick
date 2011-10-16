@@ -62,6 +62,34 @@ The plugin will *not* work on Windows.  If you want to make this work, submit a
 pull request!  It is unlikely that I will implement this feature myself.
 
 
+Recommended Key Bindings
+------------------------
+
+jEdit being the wonderful piece of software that it is, you can bind almost any
+action to almost any sequence of keystrokes, modified or unmodified.  Of course,
+jEdit being the awful piece of software that it is, plugins (such as this one)
+can't really define default keybindings for actions.  Thus, the default configuration
+of this plugin requires hunting with a mouse through nested menus to find actions.
+
+To ease this pain, I present my list of keyboard shortcuts, associated with each
+action in the ENSIME plugin.  Please note that I'm on a Mac and so the "A" modifier
+actually refers to the Ctrl key.  You will probably want a different set of key
+bindings on a different platform:
+
+* **A+s A+d** – Jump to Declaration
+* **A+s A+o** – Public Symbol Search...
+
+* **A+s A+t** – Inspect Type
+* **A+s A+s** – Expand Selection
+* **A+s A+i** – Suggest Imports
+
+* **A+s A+r e l** – Extract Local...
+* **A+s A+r e m** – Extract Method...
+* **A+s A+r l** – Inline Local
+* **A+s A+r i** – Organize Imports
+* **A+s A+r r** – Rename...
+
+
 Building
 --------
 
