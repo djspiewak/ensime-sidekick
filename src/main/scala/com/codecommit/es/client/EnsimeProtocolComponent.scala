@@ -308,6 +308,18 @@ trait EnsimeProtocolComponent extends BackendComponent {
       performRefactor('rename, 'file -> file, 'start -> offset, 'end -> (offset + length), 'newName -> newName)(failure, success)
     }
     
+    def extractMethod(file: String, offset: Int, length: Int, methodName: String)(failure: String => Unit, success: Set[Change] => Unit) {
+      performRefactor('extractMethod, 'file -> file, 'start -> offset, 'end -> (offset + length), 'methodName -> methodName)(failure, success)
+    }
+    
+    def extractLocal(file: String, offset: Int, length: Int, name: String)(failure: String => Unit, success: Set[Change] => Unit) {
+      performRefactor('extractLocal, 'file -> file, 'start -> offset, 'end -> (offset + length), 'name -> name)(failure, success)
+    }
+    
+    def inlineLocal(file: String, offset: Int, length: Int)(failure: String => Unit, success: Set[Change] => Unit) {
+      performRefactor('inlineLocal, 'file -> file, 'start -> offset, 'end -> (offset + length))(failure, success)
+    }
+    
     private def performRefactor(id: Symbol, params: (Symbol, SExp)*)(failure: String => Unit, success: Set[Change] => Unit) {
       val cid = callId()
       val paramsSE = SExpList(params map { case (Symbol(k), v) => List(key(k), v) } flatten)
@@ -380,6 +392,9 @@ trait EnsimeProtocolComponent extends BackendComponent {
     
     def organizeImports(file: String)(failure: String => Unit, success: Set[Change] => Unit)
     def rename(file: String, offset: Int, length: Int, newName: String)(failure: String => Unit, success: Set[Change] => Unit)
+    def extractMethod(file: String, offset: Int, length: Int, methodName: String)(failure: String => Unit, success: Set[Change] => Unit)
+    def extractLocal(file: String, offset: Int, length: Int, name: String)(failure: String => Unit, success: Set[Change] => Unit)
+    def inlineLocal(file: String, offset: Int, length: Int)(failure: String => Unit, success: Set[Change] => Unit)
   }
 }
 
