@@ -487,8 +487,10 @@ object EnsimePlugin {
     val origBuffer = view.getBuffer
     EventQueue.invokeLater(new Runnable {
       def run() {
+        val autosaves = Map(JEdit.getBuffers map { b => b.getAutosaveFile.getCanonicalPath -> b }: _*)
+        
         for (Change(file, text, from, to) <- changes) {
-          val buffer = JEdit.openFile(view, file)
+          val buffer = autosaves get file getOrElse JEdit.openFile(view, file)
           val pane = view.goToBuffer(buffer)
           val area = pane.getTextArea
           
