@@ -74,7 +74,7 @@ trait EnsimeProtocolComponent extends BackendComponent {
             
             if (severity == "error")
               handler.error(note)
-            else if (severity == "warning")
+            else if (severity == "warn")
               handler.warning(note)
           }
         }
