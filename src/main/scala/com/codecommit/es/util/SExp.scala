@@ -93,6 +93,8 @@ case class KeywordAtom(value: String) extends SExp {
 object SExp extends RegexParsers {
 
   import scala.util.matching.Regex
+  
+  override val whiteSpace = """(\s+|;.*)+""".r
 
   lazy val string = regexGroups("""\"((?:[^\"\\]|\\.)*)\"""".r) ^^ { m => 
     StringAtom(m.group(1).replace("\\\\", "\\")) 
