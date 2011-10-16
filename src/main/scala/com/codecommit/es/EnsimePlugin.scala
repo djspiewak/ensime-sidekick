@@ -235,7 +235,11 @@ object EnsimePlugin {
     }
   }
   
-  def expandSelection(view: View)(k: =>Unit) {
+  def expandSelection(view: View) {
+    doExpandSelection(view) {}
+  }
+  
+  private def doExpandSelection(view: View)(k: =>Unit) {
     val buffer = view.getBuffer
     
     for (inst <- instanceForBuffer(buffer)) {
@@ -390,7 +394,7 @@ object EnsimePlugin {
         selections.head.getStart
       
       if (selections.isEmpty) {
-        expandSelection(view) {
+        doExpandSelection(view) {
           rename(view)      // try, try again!
         }
       } else if (selections.length == 1) {
