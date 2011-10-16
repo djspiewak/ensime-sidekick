@@ -306,20 +306,8 @@ object EnsimePlugin {
       
       inst.Ensime.importSuggestions(filename.getAbsolutePath, point, List(word), 5) { suggestions =>
         def insertImport(suggestion: String) {
-          val (insertionPoint, pad) = ImportFinder(suggestion) { i =>
-            Option(area getLineText i)
-          }
-          
-          val oldPos = area.getCaretPosition
-          val toInsert = "%simport %s\n".format(if (pad) "\n" else "", suggestion)
-          
-          EventQueue.invokeLater(new Runnable {
-            def run() {
-              area.setCaretPosition(area.getLineStartOffset(insertionPoint), false)
-              area.setSelectedText(toInsert)
-              area.setCaretPosition(oldPos + toInsert.length, true)
-            }
-          })
+          view.getStatus.setMessage("ENSIME: Inserting import...")
+          inst.Ensime.addImport(filename.getAbsolutePath, suggestion)(modalFailure(view, "insert import"), applyChanges(view, "Insert import"))
         }
         
         val editorXY = area.getLocationOnScreen

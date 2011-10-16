@@ -320,6 +320,10 @@ trait EnsimeProtocolComponent extends BackendComponent {
       performRefactor('inlineLocal, 'file -> file, 'start -> offset, 'end -> (offset + length))(failure, success)
     }
     
+    def addImport(file: String, qname: String)(failure: String => Unit, success: Set[Change] => Unit) {
+      performRefactor('addImport, 'file -> file, 'start -> 0, 'end -> 0, 'qualifiedName -> qname)(failure, success)
+    }
+    
     private def performRefactor(id: Symbol, params: (Symbol, SExp)*)(failure: String => Unit, success: Set[Change] => Unit) {
       val cid = callId()
       val paramsSE = SExpList(params map { case (Symbol(k), v) => List(key(k), v) } flatten)
@@ -395,6 +399,7 @@ trait EnsimeProtocolComponent extends BackendComponent {
     def extractMethod(file: String, offset: Int, length: Int, methodName: String)(failure: String => Unit, success: Set[Change] => Unit)
     def extractLocal(file: String, offset: Int, length: Int, name: String)(failure: String => Unit, success: Set[Change] => Unit)
     def inlineLocal(file: String, offset: Int, length: Int)(failure: String => Unit, success: Set[Change] => Unit)
+    def addImport(file: String, qname: String)(failure: String => Unit, success: Set[Change] => Unit)
   }
 }
 
