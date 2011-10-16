@@ -94,14 +94,18 @@ object SExp extends RegexParsers {
 
   import scala.util.matching.Regex
 
-  lazy val string = regexGroups("""\"((?:[^\"\\]|\\.)*)\"""".r) ^^ { m => StringAtom(m.group(1).replace("\\\\", "\\")) }
-  lazy val sym = regex("[a-zA-Z][a-zA-Z0-9-:]*".r) ^^ SymbolAtom
+  lazy val string = regexGroups("""\"((?:[^\"\\]|\\.)*)\"""".r) ^^ { m => 
+    StringAtom(m.group(1).replace("\\\\", "\\")) 
+  }
+  lazy val sym = regex("[a-zA-Z][a-zA-Z0-9-:]*".r) ^^ { s => 
+    if(s == "nil") NilAtom()
+    else if(s == "t") TruthAtom()
+    else SymbolAtom(s)
+  }
   lazy val keyword = regex(":[a-zA-Z][a-zA-Z0-9-:]*".r) ^^ KeywordAtom
-  lazy val number = regex("-?[0-9]+".r) ^^ { cs => IntAtom(cs.toInt) }
+  lazy val number = regex("-?[0-9]+".r) ^^ { s => IntAtom(s.toInt) }
   lazy val list = literal("(") ~> rep(expr) <~ literal(")") ^^ SExpList.apply
-  lazy val nil = literal("nil") ^^ { cs => NilAtom() }
-  lazy val truth = literal("t") ^^ { cs => TruthAtom() }
-  lazy val expr: Parser[SExp] = list | nil | truth | keyword | sym | number | string
+  lazy val expr: Parser[SExp] = list | keyword | string | number | sym
 
   def read(r: Reader[Char]): SExp = {
     val result: ParseResult[SExp] = expr(r)
