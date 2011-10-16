@@ -19,18 +19,21 @@ plugin.com.codecommit.es.EnsimePlugin.menu=ensime \
   ensime.expand-selection \
   ensime.suggest-imports \
   - \
+  ensime.extract-local \
+  ensime.extract-method \
+  ensime.inline-local \
   ensime.organize-imports \
   ensime.rename
 
 options.menu.label=ENSIME
 
 # ENSIME
-ensime.label=Initialize Project
+ensime.label=Initialize Project...
 ensime.kill.label=Kill Server for Project
 
 # navigation
 ensime.jump-to-declaration.label=Jump to Declaration
-ensime.symbol-search.label=Public Symbol Search
+ensime.symbol-search.label=Public Symbol Search...
 
 # editing
 ensime.inspect-type.label=Inspect Type
@@ -38,8 +41,11 @@ ensime.expand-selection.label=Expand Selection
 ensime.suggest-imports.label=Suggest Imports
 
 # refactoring
+ensime.extract-local.label=Extract Local...
+ensime.extract-method.label=Extract Method...
+ensime.inline-local.label=Inline Local
 ensime.organize-imports.label=Organize Imports
-ensime.rename.label=Rename
+ensime.rename.label=Rename...
 
 plugin.com.codecommit.es.EnsimePlugin.depend.0=plugin sidekick.SideKickPlugin 1.2
 

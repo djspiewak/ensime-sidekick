@@ -383,22 +383,14 @@ object EnsimePlugin {
     val buffer = view.getBuffer
     
     for (inst <- instanceForBuffer(buffer)) {
-      if (buffer.isDirty) {
-        buffer.save(view, null)
+      val file = if (buffer.isDirty) {
+        buffer.autosave()
+        buffer.getAutosaveFile
+      } else {
+        new File(buffer.getPath)
       }
-      
-      val selections = view.getTextArea.getSelection
-      val finalPos = if (selections.isEmpty)
-        view.getTextArea.getCaretPosition
-      else
-        selections.head.getStart
-      
-      if (selections.isEmpty) {
-        doExpandSelection(view) {
-          rename(view)      // try, try again!
-        }
-      } else if (selections.length == 1) {
-        val selection = selections.head
+        
+      maybeSelectThenRun(view) { selection =>
         val oldName = view.getTextArea.getSelectedText
         
         EventQueue.invokeLater(new Runnable {
@@ -409,6 +401,96 @@ object EnsimePlugin {
             }
           }
         })
+      }
+    }
+  }
+  
+  def extractLocal(view: View) {
+    val buffer = view.getBuffer
+    
+    for (inst <- instanceForBuffer(buffer)) {
+      val file = if (buffer.isDirty) {
+        buffer.autosave()
+        buffer.getAutosaveFile
+      } else {
+        new File(buffer.getPath)
+      }
+        
+      maybeSelectThenRun(view) { selection =>
+        EventQueue.invokeLater(new Runnable {
+          def run() {
+            for (name <- Option(JOptionPane.showInputDialog(view, "Name:", "")) if name.trim != "") {
+              view.getStatus.setMessage("ENSIME: Extracting local...")
+              inst.Ensime.extractLocal(buffer.getPath, selection.getStart, selection.getEnd - selection.getStart, name)(modalFailure(view, "extract local"), applyChanges(view, "Extract local"))
+            }
+          }
+        })
+      }
+    }
+  }
+  
+  def extractMethod(view: View) {
+    val buffer = view.getBuffer
+    
+    for (inst <- instanceForBuffer(buffer)) {
+      val file = if (buffer.isDirty) {
+        buffer.autosave()
+        buffer.getAutosaveFile
+      } else {
+        new File(buffer.getPath)
+      }
+        
+      maybeSelectThenRun(view) { selection =>
+        EventQueue.invokeLater(new Runnable {
+          def run() {
+            for (name <- Option(JOptionPane.showInputDialog(view, "Name:", "")) if name.trim != "") {
+              view.getStatus.setMessage("ENSIME: Extracting method...")
+              inst.Ensime.extractMethod(buffer.getPath, selection.getStart, selection.getEnd - selection.getStart, name)(modalFailure(view, "extract method"), applyChanges(view, "Extract method"))
+            }
+          }
+        })
+      }
+    }
+  }
+  
+  def inlineLocal(view: View) {
+    val buffer = view.getBuffer
+    
+    for (inst <- instanceForBuffer(buffer)) {
+      val file = if (buffer.isDirty) {
+        buffer.autosave()
+        buffer.getAutosaveFile
+      } else {
+        new File(buffer.getPath)
+      }
+        
+      maybeSelectThenRun(view) { selection =>
+        EventQueue.invokeLater(new Runnable {
+          def run() {
+            view.getStatus.setMessage("ENSIME: Inlining...")
+            inst.Ensime.inlineLocal(buffer.getPath, selection.getStart, selection.getEnd - selection.getStart)(modalFailure(view, "inline local"), applyChanges(view, "Inline local"))
+          }
+        })
+      }
+    }
+  }
+  
+  private def maybeSelectThenRun(view: View)(f: Selection => Unit) {
+    val buffer = view.getBuffer
+    
+    for (inst <- instanceForBuffer(buffer)) {
+      val selections = view.getTextArea.getSelection
+      val finalPos = if (selections.isEmpty)
+        view.getTextArea.getCaretPosition
+      else
+        selections.head.getStart
+      
+      if (selections.isEmpty) {
+        doExpandSelection(view) {
+          maybeSelectThenRun(view)(f)      // try, try again!
+        }
+      } else if (selections.length == 1) {
+        f(selections.head)
       }
     }
   }

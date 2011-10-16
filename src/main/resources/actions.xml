@@ -51,4 +51,19 @@
             com.codecommit.es.EnsimePlugin.rename(view);
         </CODE>
     </ACTION>
+    <ACTION NAME="ensime.extract-method">
+        <CODE>
+            com.codecommit.es.EnsimePlugin.extractMethod(view);
+        </CODE>
+    </ACTION>
+    <ACTION NAME="ensime.extract-local">
+        <CODE>
+            com.codecommit.es.EnsimePlugin.extractLocal(view);
+        </CODE>
+    </ACTION>
+    <ACTION NAME="ensime.inline-local">
+        <CODE>
+            com.codecommit.es.EnsimePlugin.inlineLocal(view);
+        </CODE>
+    </ACTION>
 </ACTIONS>
