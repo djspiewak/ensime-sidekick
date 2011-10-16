@@ -300,23 +300,15 @@ trait EnsimeProtocolComponent extends BackendComponent {
       dispatchSwank(id, SExp(key("swank:public-symbol-search"), SExpList(names map StringAtom), maxResults))
     }
     
-    def organizeImports(file: String)(callback: () => Unit) {
-      def failure(reason: String) {}
-      
-      def success(files: List[String]) {
-        callback()
-      }
-      
+    def organizeImports(file: String)(failure: String => Unit, success: Set[Change] => Unit) {
       performRefactor('organizeImports, 'file -> file)(failure, success)
     }
     
-    def rename(file: String, offset: Int, length: Int, newName: String)(callback: List[String] => Unit) {
-      def failure(reason: String) {}
-      
-      performRefactor('rename, 'file -> file, 'start -> offset, 'end -> (offset + length), 'newName -> newName)(failure, callback)
+    def rename(file: String, offset: Int, length: Int, newName: String)(failure: String => Unit, success: Set[Change] => Unit) {
+      performRefactor('rename, 'file -> file, 'start -> offset, 'end -> (offset + length), 'newName -> newName)(failure, success)
     }
     
-    private def performRefactor(id: Symbol, params: (Symbol, SExp)*)(failure: String => Unit, success: List[String] => Unit) {
+    private def performRefactor(id: Symbol, params: (Symbol, SExp)*)(failure: String => Unit, success: Set[Change] => Unit) {
       val cid = callId()
       val paramsSE = SExpList(params map { case (Symbol(k), v) => List(key(k), v) } flatten)
       
@@ -328,13 +320,28 @@ trait EnsimeProtocolComponent extends BackendComponent {
             val StringAtom(reason) = map(key(":reason"))
             failure(reason)
           } else {
-            val SExpList(fileSE) = map(key(":touched-files"))
-            success(fileSE collect { case StringAtom(file) => file } toList)
+            val SExpList(changesItr) = map get key(":changes") getOrElse SExp()
+            
+            val mappedChanges = changesItr collect {
+              case change: SExpList => {
+                val changeMap = change.toKeywordMap
+                
+                val StringAtom(file) = changeMap(key(":file"))
+                val StringAtom(text) = changeMap(key(":text"))
+                val IntAtom(from) = changeMap(key(":from"))
+                val IntAtom(to) = changeMap(key(":to"))
+                
+                Change(file, text, from, to)
+              }
+            }
+            
+            dispatchSwank(callId(), SExp(key("swank:cancel-refactor"), map(key(":procedure-id"))))
+            success(Set(mappedChanges.toSeq: _*))
           }
         }
       }
       
-      dispatchSwank(cid, SExp(key("swank:perform-refactor"), procId(), id, paramsSE, false))
+      dispatchSwank(cid, SExp(key("swank:perform-refactor"), procId(), id, paramsSE, true))
     }
     
     private def dispatchSwank(id: Int, sexp: SExp) {
@@ -371,8 +378,8 @@ trait EnsimeProtocolComponent extends BackendComponent {
     def importSuggestions(file: String, point: Int, names: List[String], maxResults: Int)(callback: List[String] => Unit)
     def publicSymbolSearch(names: List[String], maxResults: Int)(callback: List[(String, String, Int)] => Unit)
     
-    def organizeImports(file: String)(callback: () => Unit)
-    def rename(file: String, offset: Int, length: Int, newName: String)(callback: List[String] => Unit)
+    def organizeImports(file: String)(failure: String => Unit, success: Set[Change] => Unit)
+    def rename(file: String, offset: Int, length: Int, newName: String)(failure: String => Unit, success: Set[Change] => Unit)
   }
 }
 
@@ -389,4 +396,6 @@ object EnsimeProtocol {
   }
   
   case class Location(file: String, offset: Int)
+  
+  case class Change(file: String, text: String, from: Int, to: Int)
 }

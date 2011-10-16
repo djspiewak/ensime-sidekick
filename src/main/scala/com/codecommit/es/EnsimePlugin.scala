@@ -27,6 +27,8 @@ class EnsimePlugin extends EBPlugin {
 }
 
 object EnsimePlugin {
+  import EnsimeProtocol._
+  
   private var instances = Map[File, Instance]()
   private val lock = new AnyRef
   
@@ -361,20 +363,15 @@ object EnsimePlugin {
     val buffer = view.getBuffer
     
     for (inst <- instanceForBuffer(buffer)) {
-      if (buffer.isDirty) {
-        buffer.save(view, null)
+      val file = if (buffer.isDirty) {
+        buffer.autosave()
+        buffer.getAutosaveFile
+      } else {
+        new File(buffer.getPath)
       }
       
-      inst.Ensime.organizeImports(buffer.getPath) { () =>
-        EventQueue.invokeLater(new Runnable {
-          def run() {
-            buffer.load(view, true)
-            typecheckFile(buffer)
-            
-            JOptionPane.showMessageDialog(view, "Organize Imports refactoring completed successfully!", "Refactoring", JOptionPane.INFORMATION_MESSAGE)
-          }
-        })
-      }
+      view.getStatus.setMessage("ENSIME: Organizing imports...")
+      inst.Ensime.organizeImports(file.getAbsolutePath)(modalFailure(view, "organize imports"), applyChanges(view, "Organize imports"))
     }
   }
   
@@ -403,26 +400,42 @@ object EnsimePlugin {
         EventQueue.invokeLater(new Runnable {
           def run() {
             for (newName <- Option(JOptionPane.showInputDialog(view, "Rename:", oldName))) {
-              inst.Ensime.rename(buffer.getPath, selection.getStart, selection.getEnd - selection.getStart, newName) { files =>
-                val fileSet = Set(files: _*)
-                
-                EventQueue.invokeLater(new Runnable {
-                  def run() {
-                    view.getTextArea.setCaretPosition(finalPos)
-                    for (buffer <- JEdit.getBuffers if fileSet contains buffer.getPath) {
-                      buffer.load(view, true)
-                      typecheckFile(buffer)
-                    }
-                    
-                    JOptionPane.showMessageDialog(view, "Rename refactoring completed successfully!", "Refactoring", JOptionPane.INFORMATION_MESSAGE)
-                  }
-                })
-              }
+              view.getStatus.setMessage("ENSIME: Renaming...")
+              inst.Ensime.rename(buffer.getPath, selection.getStart, selection.getEnd - selection.getStart, newName)(modalFailure(view, "rename"), applyChanges(view, "Rename"))
             }
           }
         })
       }
     }
+  }
+  
+  private def applyChanges(view: View, name: String)(changes: Set[Change]) {
+    val origBuffer = view.getBuffer
+    EventQueue.invokeLater(new Runnable {
+      def run() {
+        for (Change(file, text, from, to) <- changes) {
+          val buffer = JEdit.openFile(view, file)
+          val pane = view.goToBuffer(buffer)
+          val area = pane.getTextArea
+          
+          val origPos = area.getCaretPosition
+          area.setSelectedText(new Selection.Range(from, to), text)
+          area.setCaretPosition(origPos + text.length - (to - from))    // TODO re-scroll buffer to orig
+        }
+        
+        view.goToBuffer(origBuffer)
+        view.getStatus.setMessage("ENSIME: Refactoring complete!")
+      }
+    })
+  }
+  
+  private def modalFailure(view: View, name: String)(msg: String) {
+    EventQueue.invokeLater(new Runnable {
+      def run() {
+        JOptionPane.showMessageDialog(view, "Could not complete %s refactoring: %s".format(name, msg),
+          "Error", JOptionPane.ERROR_MESSAGE)
+      }
+    })
   }
   
   private def instanceForBuffer(buffer: Buffer) =
