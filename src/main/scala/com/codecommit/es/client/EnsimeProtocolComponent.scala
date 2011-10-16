@@ -334,7 +334,7 @@ trait EnsimeProtocolComponent extends BackendComponent {
         }
       }
       
-      dispatchSwank(cid, SExp(key("swank:perform-refactor"), procId(), 'organizeImports, paramsSE, false))
+      dispatchSwank(cid, SExp(key("swank:perform-refactor"), procId(), id, paramsSE, false))
     }
     
     private def dispatchSwank(id: Int, sexp: SExp) {

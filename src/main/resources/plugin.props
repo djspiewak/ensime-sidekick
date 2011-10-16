@@ -19,7 +19,8 @@ plugin.com.codecommit.es.EnsimePlugin.menu=ensime \
   ensime.expand-selection \
   ensime.suggest-imports \
   - \
-  ensime.organize-imports
+  ensime.organize-imports \
+  ensime.rename
 
 options.menu.label=ENSIME
 
@@ -38,6 +39,7 @@ ensime.suggest-imports.label=Suggest Imports
 
 # refactoring
 ensime.organize-imports.label=Organize Imports
+ensime.rename.label=Rename
 
 plugin.com.codecommit.es.EnsimePlugin.depend.0=plugin sidekick.SideKickPlugin 1.2
 

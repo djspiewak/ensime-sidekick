@@ -387,7 +387,12 @@ object EnsimePlugin {
       }
       
       val selections = view.getTextArea.getSelection
-      if (selections.length == 0) {
+      val finalPos = if (selections.isEmpty)
+        view.getTextArea.getCaretPosition
+      else
+        selections.head.getStart
+      
+      if (selections.isEmpty) {
         expandSelection(view) {
           rename(view)      // try, try again!
         }
@@ -403,6 +408,7 @@ object EnsimePlugin {
                 
                 EventQueue.invokeLater(new Runnable {
                   def run() {
+                    view.getTextArea.setCaretPosition(finalPos)
                     for (buffer <- JEdit.getBuffers if fileSet contains buffer.getPath) {
                       buffer.load(view, true)
                       typecheckFile(buffer)

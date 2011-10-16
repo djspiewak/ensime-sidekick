@@ -23,7 +23,11 @@
     </ACTION>
     <ACTION NAME="ensime.expand-selection">
         <CODE>
-            com.codecommit.es.EnsimePlugin.expandSelection(view, null);
+            com.codecommit.es.EnsimePlugin.expandSelection(view, new AbstractFunction0() {
+            	public Object apply() {
+            		return null;
+            	}
+            });
         </CODE>
     </ACTION>
     <ACTION NAME="ensime.typecheck-file">
