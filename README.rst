@@ -26,6 +26,9 @@ Features
   
 * Refactoring
 
+  * Extract Local
+  * Extract Method
+  * Inline Local
   * Organize Imports
   * Rename
 
