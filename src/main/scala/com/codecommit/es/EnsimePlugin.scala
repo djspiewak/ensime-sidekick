@@ -522,8 +522,13 @@ object EnsimePlugin {
     })
   }
   
-  private def instanceForBuffer(buffer: Buffer) =
-    parentDirs(new File(buffer.getPath)) flatMap instances.get headOption
+  private def instanceForBuffer(buffer: Buffer) = {
+    val file = new File(buffer.getPath)
+    if (!buffer.isDirty || file.exists)
+      parentDirs(file) flatMap instances.get headOption
+    else
+      None
+  }
   
   private def parentDirs(base: File): Stream[File] =
     base #:: (Option(base.getParent) map { new File(_) } map parentDirs getOrElse Stream.empty)
