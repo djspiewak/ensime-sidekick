@@ -201,6 +201,10 @@ trait EnsimeProtocolComponent extends BackendComponent {
       dispatchSwank(callId(), SExp(key("swank:typecheck-file"), file))
     }
     
+    def typecheckAll() {
+      dispatchSwank(callId(), SExp(key("swank:typecheck-all")))
+    }
+    
     def symbolAtPoint(file: String, offset: Int)(callback: Option[Location] => Unit) {
       val id = callId()
       
@@ -389,6 +393,7 @@ trait EnsimeProtocolComponent extends BackendComponent {
     def typeCompletion(file: String, offset: Int, prefix: String)(callback: List[CompletionResult] => Unit)
     def typeAtPoint(file: String, offset: Int)(callback: Type => Unit)
     def typecheckFile(file: String)
+    def typecheckAll()
     def symbolAtPoint(file: String, offset: Int)(callback: Option[Location] => Unit)
     def expandSelection(file: String, start: Int, end: Int)(callback: (Int, Int) => Unit)
     def importSuggestions(file: String, point: Int, names: List[String], maxResults: Int)(callback: List[String] => Unit)

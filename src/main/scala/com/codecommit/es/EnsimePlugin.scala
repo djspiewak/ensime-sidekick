@@ -191,6 +191,14 @@ object EnsimePlugin {
     }
   }
   
+  def typecheckAll(view: View) {
+    val buffer = view.getBuffer
+    for (inst <- instanceForBuffer(buffer)) {
+      view.getStatus.setMessage("ENSIME: Typechecking all files...")
+      inst.Ensime.typecheckAll()
+    }
+  }
+  
   def jumpToDeclaration(view: View) {
     val buffer = view.getBuffer
     

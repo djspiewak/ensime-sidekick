@@ -11,6 +11,7 @@ options.ensime.code=new com.codecommit.es.ui.EnsimeOptionPane();
 
 plugin.com.codecommit.es.EnsimePlugin.menu=ensime \
   ensime.kill \
+  ensime.typecheck-all \
   - \
   ensime.jump-to-declaration \
   ensime.symbol-search \
@@ -30,6 +31,7 @@ options.menu.label=ENSIME
 # ENSIME
 ensime.label=Initialize Project...
 ensime.kill.label=Kill Server for Project
+ensime.typecheck-all.label=Typecheck All
 
 # navigation
 ensime.jump-to-declaration.label=Jump to Declaration

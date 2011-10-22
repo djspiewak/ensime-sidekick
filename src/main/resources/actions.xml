@@ -31,6 +31,11 @@
             com.codecommit.es.EnsimePlugin.typecheckFile(view.getBuffer());
         </CODE>
     </ACTION>
+    <ACTION NAME="ensime.typecheck-all">
+        <CODE>
+            com.codecommit.es.EnsimePlugin.typecheckAll(view);
+        </CODE>
+    </ACTION>
     <ACTION NAME="ensime.suggest-imports">
         <CODE>
             com.codecommit.es.EnsimePlugin.suggestImports(view);
