@@ -505,14 +505,18 @@ object EnsimePlugin {
       def run() {
         val autosaves = Map(JEdit.getBuffers map { b => b.getAutosaveFile.getCanonicalPath -> b }: _*)
         
-        for (Change(file, text, from, to) <- changes) {
-          val buffer = autosaves get file getOrElse JEdit.openFile(view, file)
-          val pane = view.goToBuffer(buffer)
-          val area = pane.getTextArea
-          
-          val origPos = area.getCaretPosition
-          area.setSelectedText(new Selection.Range(from, to), text)
-          area.setCaretPosition(origPos + text.length - (to - from))    // TODO re-scroll buffer to orig
+        changes.foldLeft(0) {
+          case (offset, Change(file, text, from, to)) => {
+            val buffer = autosaves get file getOrElse JEdit.openFile(view, file)
+            val pane = view.goToBuffer(buffer)
+            val area = pane.getTextArea
+            
+            val origPos = area.getCaretPosition
+            area.setSelectedText(new Selection.Range(offset + from, offset + to), text)
+            area.setCaretPosition(origPos + text.length - (to - from))    // TODO re-scroll buffer to orig
+            
+            offset + text.length - (to - from)
+          }
         }
         
         view.goToBuffer(origBuffer)
