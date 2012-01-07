@@ -67,75 +67,83 @@ object EnsimePlugin {
       
       EventQueue.invokeLater(new Runnable {
         def run() {
-          for {
+          val response = for {
             n <- Option(JOptionPane.showInputDialog(view, "ENSIME Project File:", projectPath))
-          } Some(new File(n)).filter(_.exists)
-              .map(initProjectFile)
-              .getOrElse(JOptionPane.showMessageDialog(view, "Specified project file does not exist!", "Error", JOptionPane.ERROR_MESSAGE))
+            f <- Some(new File(n))
+            if f.exists
+          } yield initProjectFile(Set(parents map { _.getAbsolutePath }: _*), f)
+          
+          response getOrElse JOptionPane.showMessageDialog(view, "Specified project file does not exist!", "Error", JOptionPane.ERROR_MESSAGE)
         }
       })
     }
     
-    def initProjectFile(projectFile: File) = {
+    def initProjectFile(parents: Set[String], projectFile: File) = {
       val src = Source fromFile projectFile
       val optProjectData = Option(SExp.read(new CharSequenceReader(src.mkString)))
       
       if (!optProjectData.isDefined || optProjectData == Some(NilAtom())) {
-        JOptionPane.showMessageDialog(view, "Project file is invalid.  Make sure it consists of a single s-expression.  (no comments!)", "Error", JOptionPane.ERROR_MESSAGE)
+        JOptionPane.showMessageDialog(view, "Project file is invalid", "Error", JOptionPane.ERROR_MESSAGE)
       }
       
       for (projectData @ SExpList(data) <- optProjectData) {
-        val optSubprojectItems = projectData.toKeywordMap.get(SExp.key(":sbt-subprojects")) collect { case SExpList(items) => Vector(items.toList: _*) }
-        val optSubprojects = optSubprojectItems map { _ collect { case xs: SExpList => xs.toKeywordMap } map { _(SExp.key(":name")) } collect { case StringAtom(str) => str } }
+        val projectMap = projectData.toKeywordMap
+        val SExpList(subprojectSExps) = projectMap(SExp.key(":subprojects"))
+        val subprojects = subprojectSExps collect { case sel: SExpList => sel.toKeywordMap }
         
-        val optActiveSubproject = optSubprojects flatMap { subprojects =>
-          val dialog = new ui.SubprojectSelectorDialog(view, subprojects)
-          dialog.open()
+        val activeSExp = subprojects find { sexp =>
+          val SExpList(roots) = sexp(SExp.key(":source-roots"))
+          roots collect { case StringAtom(str) => str } exists parents
         }
         
-        if (!optSubprojects.isDefined || optActiveSubproject.isDefined) {
-          val parentDir = projectFile.getParentFile
-          val projectData2 = SExpList(
-            SExp.key(":root-dir") :: StringAtom(parentDir.getAbsolutePath) ::
-            (optActiveSubproject map { str => SExp.key(":sbt-active-subproject") :: StringAtom(str) :: data.toList } getOrElse data.toList))
-          
-          val home = projectData2.toKeywordMap get SExp.key(":ensime-home") collect { case StringAtom(str) => str } map { new File(_) } filter { _.exists } getOrElse EnsimeHome
-          
-          view.getStatus.setMessage("ENSIME: Starting server...")
-          
-          val inst = new Instance(parentDir, home) { self =>
-            def fatalServerError(msg: String) {
-              EventQueue.invokeLater(new Runnable {
-                def run() {
-                  JOptionPane.showMessageDialog(view, "ENSIME: Fatal Error!  " + msg, "Error", JOptionPane.ERROR_MESSAGE)
+        val activeName = activeSExp flatMap { _ get SExp.key(":name") } collect { case StringAtom(str) => str } match {
+          case Some(activeName) => {
+            val parentDir = projectFile.getParentFile
+            val projectData2 = SExpList(
+              SExp.key(":root-dir") :: StringAtom(parentDir.getAbsolutePath) ::
+              SExp.key(":active-subproject") :: StringAtom(activeName) :: data.toList)
+            
+            val home = projectData2.toKeywordMap get SExp.key(":ensime-home") collect { case StringAtom(str) => str } map { new File(_) } filter { _.exists } getOrElse EnsimeHome
+            
+            view.getStatus.setMessage("ENSIME: Starting server...")
+            
+            val inst = new Instance(parentDir, home) { self =>
+              def fatalServerError(msg: String) {
+                EventQueue.invokeLater(new Runnable {
+                  def run() {
+                    JOptionPane.showMessageDialog(view, "ENSIME: Fatal Error!  " + msg, "Error", JOptionPane.ERROR_MESSAGE)
+                  }
+                })
+                
+                lock synchronized {
+                  for ((root, `self`) <- instances) {
+                    instances -= root
+                  }
                 }
-              })
-              
-              lock synchronized {
-                for ((root, `self`) <- instances) {
-                  instances -= root
+                
+                self.stop()
+              }
+            }
+            
+            inst.start("SBT_OPTS" -> SbtOpts)
+            inst.Ensime.initProject(projectData2) { (projectName, sourceRoots) =>
+              if (sourceRoots.isEmpty) {
+                EventQueue.invokeLater(new Runnable {
+                  def run() {
+                    JOptionPane.showMessageDialog(view, "ENSIME failed to start!  Could not detect source roots.", "Error", JOptionPane.ERROR_MESSAGE)
+                  }
+                })
+                inst.stop()
+              } else {
+                lock synchronized {
+                  sourceRoots foreach { root => instances += (root -> inst) }
                 }
               }
-              
-              self.stop()
             }
           }
           
-          inst.start("SBT_OPTS" -> SbtOpts)
-          inst.Ensime.initProject(projectData2) { (projectName, sourceRoots) =>
-            if (sourceRoots.isEmpty) {
-              EventQueue.invokeLater(new Runnable {
-                def run() {
-                  JOptionPane.showMessageDialog(view, "ENSIME failed to start!  Could not detect source roots.", "Error", JOptionPane.ERROR_MESSAGE)
-                }
-              })
-              inst.stop()
-            } else {
-              lock synchronized {
-                sourceRoots foreach { root => instances += (root -> inst) }
-              }
-            }
-          }
+          case None =>
+            JOptionPane.showMessageDialog(view, "Could not detect active subproject.  The project file may be malformed", "Error", JOptionPane.ERROR_MESSAGE)
         }
       }
     }

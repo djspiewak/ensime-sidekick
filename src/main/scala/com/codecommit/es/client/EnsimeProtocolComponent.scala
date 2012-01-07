@@ -40,16 +40,16 @@ trait EnsimeProtocolComponent extends BackendComponent {
         case SExpList(KeywordAtom(":background-message") :: _ :: StringAtom(msg) :: Nil) =>
           handler.backgroundMessage(msg)
         
-        case SExpList(KeywordAtom(":clear-all-scala-notes") :: TruthAtom() :: Nil) =>
+        case SExpList(KeywordAtom(":clear-all-scala-notes") :: Nil) =>
           handler.clearAll()
         
-        case SExpList(KeywordAtom(":compiler-ready") :: TruthAtom() :: Nil) =>
+        case SExpList(KeywordAtom(":compiler-ready") :: Nil) =>
           handler.compilerReady()
         
-        case SExpList(KeywordAtom(":full-typecheck-finished") :: TruthAtom() :: Nil) =>
+        case SExpList(KeywordAtom(":full-typecheck-finished") :: Nil) =>
           handler.fullTypecheckFinished()
         
-        case SExpList(KeywordAtom(":indexer-ready") :: TruthAtom() :: Nil) =>
+        case SExpList(KeywordAtom(":indexer-ready") :: Nil) =>
           handler.indexerReady()
         
         case se @ SExpList(KeywordAtom(":scala-notes") :: (props: SExpList) :: Nil) => {
