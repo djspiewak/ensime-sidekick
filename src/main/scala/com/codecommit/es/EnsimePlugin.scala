@@ -499,7 +499,7 @@ object EnsimePlugin {
     }
   }
   
-  private def applyChanges(view: View, name: String)(changes: Set[Change]) {
+  private def applyChanges(view: View, name: String)(changes: List[Change]) {
     val origBuffer = view.getBuffer
     EventQueue.invokeLater(new Runnable {
       def run() {

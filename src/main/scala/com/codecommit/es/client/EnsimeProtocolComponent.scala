@@ -304,31 +304,31 @@ trait EnsimeProtocolComponent extends BackendComponent {
       dispatchSwank(id, SExp(key("swank:public-symbol-search"), SExpList(names map StringAtom), maxResults))
     }
     
-    def organizeImports(file: String)(failure: String => Unit, success: Set[Change] => Unit) {
+    def organizeImports(file: String)(failure: String => Unit, success: List[Change] => Unit) {
       performRefactor('organizeImports, 'file -> file)(failure, success)
     }
     
-    def rename(file: String, offset: Int, length: Int, newName: String)(failure: String => Unit, success: Set[Change] => Unit) {
+    def rename(file: String, offset: Int, length: Int, newName: String)(failure: String => Unit, success: List[Change] => Unit) {
       performRefactor('rename, 'file -> file, 'start -> offset, 'end -> (offset + length), 'newName -> newName)(failure, success)
     }
     
-    def extractMethod(file: String, offset: Int, length: Int, methodName: String)(failure: String => Unit, success: Set[Change] => Unit) {
+    def extractMethod(file: String, offset: Int, length: Int, methodName: String)(failure: String => Unit, success: List[Change] => Unit) {
       performRefactor('extractMethod, 'file -> file, 'start -> offset, 'end -> (offset + length), 'methodName -> methodName)(failure, success)
     }
     
-    def extractLocal(file: String, offset: Int, length: Int, name: String)(failure: String => Unit, success: Set[Change] => Unit) {
+    def extractLocal(file: String, offset: Int, length: Int, name: String)(failure: String => Unit, success: List[Change] => Unit) {
       performRefactor('extractLocal, 'file -> file, 'start -> offset, 'end -> (offset + length), 'name -> name)(failure, success)
     }
     
-    def inlineLocal(file: String, offset: Int, length: Int)(failure: String => Unit, success: Set[Change] => Unit) {
+    def inlineLocal(file: String, offset: Int, length: Int)(failure: String => Unit, success: List[Change] => Unit) {
       performRefactor('inlineLocal, 'file -> file, 'start -> offset, 'end -> (offset + length))(failure, success)
     }
     
-    def addImport(file: String, qname: String)(failure: String => Unit, success: Set[Change] => Unit) {
+    def addImport(file: String, qname: String)(failure: String => Unit, success: List[Change] => Unit) {
       performRefactor('addImport, 'file -> file, 'start -> 0, 'end -> 0, 'qualifiedName -> qname)(failure, success)
     }
     
-    private def performRefactor(id: Symbol, params: (Symbol, SExp)*)(failure: String => Unit, success: Set[Change] => Unit) {
+    private def performRefactor(id: Symbol, params: (Symbol, SExp)*)(failure: String => Unit, success: List[Change] => Unit) {
       val cid = callId()
       val paramsSE = SExpList(params map { case (Symbol(k), v) => List(key(k), v) } flatten)
       
@@ -356,7 +356,7 @@ trait EnsimeProtocolComponent extends BackendComponent {
             }
             
             dispatchSwank(callId(), SExp(key("swank:cancel-refactor"), map(key(":procedure-id"))))
-            success(Set(mappedChanges.toSeq: _*))
+            success(mappedChanges.toList)
           }
         }
       }
@@ -399,12 +399,12 @@ trait EnsimeProtocolComponent extends BackendComponent {
     def importSuggestions(file: String, point: Int, names: List[String], maxResults: Int)(callback: List[String] => Unit)
     def publicSymbolSearch(names: List[String], maxResults: Int)(callback: List[(String, String, Int)] => Unit)
     
-    def organizeImports(file: String)(failure: String => Unit, success: Set[Change] => Unit)
-    def rename(file: String, offset: Int, length: Int, newName: String)(failure: String => Unit, success: Set[Change] => Unit)
-    def extractMethod(file: String, offset: Int, length: Int, methodName: String)(failure: String => Unit, success: Set[Change] => Unit)
-    def extractLocal(file: String, offset: Int, length: Int, name: String)(failure: String => Unit, success: Set[Change] => Unit)
-    def inlineLocal(file: String, offset: Int, length: Int)(failure: String => Unit, success: Set[Change] => Unit)
-    def addImport(file: String, qname: String)(failure: String => Unit, success: Set[Change] => Unit)
+    def organizeImports(file: String)(failure: String => Unit, success: List[Change] => Unit)
+    def rename(file: String, offset: Int, length: Int, newName: String)(failure: String => Unit, success: List[Change] => Unit)
+    def extractMethod(file: String, offset: Int, length: Int, methodName: String)(failure: String => Unit, success: List[Change] => Unit)
+    def extractLocal(file: String, offset: Int, length: Int, name: String)(failure: String => Unit, success: List[Change] => Unit)
+    def inlineLocal(file: String, offset: Int, length: Int)(failure: String => Unit, success: List[Change] => Unit)
+    def addImport(file: String, qname: String)(failure: String => Unit, success: List[Change] => Unit)
   }
 }
 
