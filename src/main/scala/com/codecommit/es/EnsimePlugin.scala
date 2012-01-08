@@ -511,9 +511,7 @@ object EnsimePlugin {
             val pane = view.goToBuffer(buffer)
             val area = pane.getTextArea
             
-            val origPos = area.getCaretPosition
             area.setSelectedText(new Selection.Range(offset + from, offset + to), text)
-            area.setCaretPosition(origPos + text.length - (to - from))    // TODO re-scroll buffer to orig
             
             offset + text.length - (to - from)
           }
